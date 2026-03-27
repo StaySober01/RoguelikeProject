@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class SampleUnit : MonoBehaviour
+public class Unit : MonoBehaviour
 {
     public string unitName;
     public int maxHp = 30;
