@@ -1,2 +1,27 @@
-# Auto detect text files and perform LF normalization
 * text=auto
+
+*.cs text diff=csharp
+*.shader text
+*.compute text
+*.cginc text
+*.hlsl text
+*.json text
+*.md text
+*.txt text
+*.yml text
+*.yaml text
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.fbx binary
+*.anim binary
+*.controller binary
+*.unity binary
+*.prefab binary
+*.asset binary
+*.mat binary
+*.wav binary
+*.mp3 binary
+*.ogg binary
