@@ -13,6 +13,8 @@ public class BattleManager : MonoBehaviour
 
     [Header("UI Buttons")]
     public Button attackButton;
+    public Button heavyAttackButton;
+    public Button defendButton;
     public Button endTurnButton;
 
     [Header("Debug UI")]
@@ -23,7 +25,15 @@ public class BattleManager : MonoBehaviour
 
     [Header("Energy")]
     public int maxEnergy = 3;
-    private int currentEnergy; //나중에 상황 보고 다른 클래스로 옮기던지 할 것
+    [SerializeField] private int currentEnergy;
+
+    [Header("Action Values")]
+    public int normalAttackCost = 1;
+    public int heavyAttackCost = 2;
+    public int defendCost = 1;
+
+    public int heavyAttackDamage = 10;
+    public int defendBlockAmount = 6;
 
     private void Start()
     {
@@ -39,12 +49,13 @@ public class BattleManager : MonoBehaviour
 
     public void StartPlayerTurn()
     {
+        playerUnit.ResetBlock();
+
         state = BattleState.PlayerTurn;
         currentEnergy = maxEnergy;
 
         Debug.Log($"Player Turn Start - Energy: {currentEnergy}/{maxEnergy}");
 
-        SetPlayerActionButtons(true);
         RefreshActionButtons();
         UpdateDebugUI();
     }
@@ -56,6 +67,7 @@ public class BattleManager : MonoBehaviour
 
         SetPlayerActionButtons(false);
         UpdateDebugUI();
+
         StartCoroutine(EnemyAttackRoutine());
     }
 
@@ -64,13 +76,41 @@ public class BattleManager : MonoBehaviour
         if (state != BattleState.PlayerTurn)
             return;
 
-        if (currentEnergy < 1)
+        if (currentEnergy < normalAttackCost)
         {
-            Debug.Log("Not enough energy to attack.");
+            Debug.Log("Not enough energy for normal attack.");
             return;
         }
 
-        StartCoroutine(PlayerAttackRoutine());
+        StartCoroutine(PlayerAttackRoutine(playerUnit.attackPower, normalAttackCost, "Attack"));
+    }
+
+    public void OnClickHeavyAttack()
+    {
+        if (state != BattleState.PlayerTurn)
+            return;
+
+        if (currentEnergy < heavyAttackCost)
+        {
+            Debug.Log("Not enough energy for heavy attack.");
+            return;
+        }
+
+        StartCoroutine(PlayerAttackRoutine(heavyAttackDamage, heavyAttackCost, "Heavy Attack"));
+    }
+
+    public void OnClickDefend()
+    {
+        if (state != BattleState.PlayerTurn)
+            return;
+
+        if (currentEnergy < defendCost)
+        {
+            Debug.Log("Not enough energy to defend.");
+            return;
+        }
+
+        StartCoroutine(PlayerDefendRoutine());
     }
 
     public void OnClickEndTurn()
@@ -81,18 +121,19 @@ public class BattleManager : MonoBehaviour
         Debug.Log("Player ends turn");
         SetPlayerActionButtons(false);
         UpdateDebugUI();
+
         StartEnemyTurn();
     }
 
-    private IEnumerator PlayerAttackRoutine()
+    private IEnumerator PlayerAttackRoutine(int damage, int cost, string actionName)
     {
         state = BattleState.Busy;
         SetPlayerActionButtons(false);
 
-        currentEnergy -= 1;
-        Debug.Log($"Player attacks {enemyUnit.unitName} (Energy: {currentEnergy}/{maxEnergy})");
+        currentEnergy -= cost;
+        Debug.Log($"Player uses {actionName} on {enemyUnit.unitName} (Cost: {cost}, Energy: {currentEnergy}/{maxEnergy})");
 
-        enemyUnit.TakeDamage(playerUnit.attackPower);
+        enemyUnit.TakeDamage(damage);
         UpdateDebugUI();
 
         yield return new WaitForSeconds(0.5f);
@@ -106,10 +147,29 @@ public class BattleManager : MonoBehaviour
             yield break;
         }
 
-        // 공격 후 턴 종료하지 않고, 다시 플레이어 선택으로 복귀
         state = BattleState.PlayerTurn;
+        Debug.Log($"Player action complete. Remaining Energy: {currentEnergy}/{maxEnergy}");
 
-        Debug.Log($"Player can act again. Remaining Energy: {currentEnergy}/{maxEnergy}");
+        RefreshActionButtons();
+        UpdateDebugUI();
+    }
+
+    private IEnumerator PlayerDefendRoutine()
+    {
+        state = BattleState.Busy;
+        SetPlayerActionButtons(false);
+
+        currentEnergy -= defendCost;
+        Debug.Log($"Player uses Defend (Cost: {defendCost}, Energy: {currentEnergy}/{maxEnergy})");
+
+        playerUnit.AddBlock(defendBlockAmount);
+        UpdateDebugUI();
+
+        yield return new WaitForSeconds(0.5f);
+
+        state = BattleState.PlayerTurn;
+        Debug.Log($"Player action complete. Remaining Energy: {currentEnergy}/{maxEnergy}");
+
         RefreshActionButtons();
         UpdateDebugUI();
     }
@@ -117,6 +177,7 @@ public class BattleManager : MonoBehaviour
     private IEnumerator EnemyAttackRoutine()
     {
         state = BattleState.Busy;
+        UpdateDebugUI();
 
         yield return new WaitForSeconds(1f);
 
@@ -142,6 +203,8 @@ public class BattleManager : MonoBehaviour
     private void SetPlayerActionButtons(bool isActive)
     {
         attackButton.interactable = isActive;
+        heavyAttackButton.interactable = isActive;
+        defendButton.interactable = isActive;
         endTurnButton.interactable = isActive;
     }
 
@@ -153,17 +216,19 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        attackButton.interactable = currentEnergy >= 1;
+        attackButton.interactable = currentEnergy >= normalAttackCost;
+        heavyAttackButton.interactable = currentEnergy >= heavyAttackCost;
+        defendButton.interactable = currentEnergy >= defendCost;
         endTurnButton.interactable = true;
     }
 
     private void UpdateDebugUI()
     {
         if (playerHpText != null)
-            playerHpText.text = $"Player HP: {playerUnit.currentHp}/{playerUnit.maxHp}";
+            playerHpText.text = $"Player HP: {playerUnit.currentHp}/{playerUnit.maxHp}  Block: {playerUnit.currentBlock}";
 
         if (enemyHpText != null)
-            enemyHpText.text = $"Enemy HP: {enemyUnit.currentHp}/{enemyUnit.maxHp}";
+            enemyHpText.text = $"Enemy HP: {enemyUnit.currentHp}/{enemyUnit.maxHp}  Block: {enemyUnit.currentBlock}";
 
         if (energyText != null)
             energyText.text = $"Energy: {currentEnergy}/{maxEnergy}";

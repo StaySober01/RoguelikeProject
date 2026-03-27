@@ -7,18 +7,51 @@ public class Unit : MonoBehaviour
     public int currentHp = 30;
     public int attackPower = 5;
 
+    public int currentBlock = 0;
+
     private void Awake()
     {
         currentHp = maxHp;
+        currentBlock = 0;
     }
 
     public void TakeDamage(int damage)
     {
-        currentHp -= damage;
-        if (currentHp < 0)
-            currentHp = 0;
+        int remainingDamage = damage;
 
-        Debug.Log($"{unitName} takes {damage} damage. Current HP: {currentHp}/{maxHp}");
+        if (currentBlock > 0)
+        {
+            int blockedAmount = Mathf.Min(currentBlock, remainingDamage);
+            currentBlock -= blockedAmount;
+            remainingDamage -= blockedAmount;
+
+            Debug.Log($"{unitName} blocks {blockedAmount} damage. Remaining Block: {currentBlock}");
+        }
+
+        if (remainingDamage > 0)
+        {
+            currentHp -= remainingDamage;
+
+            if (currentHp < 0)
+                currentHp = 0;
+
+            Debug.Log($"{unitName} takes {remainingDamage} damage. Current HP: {currentHp}/{maxHp}");
+        }
+        else
+        {
+            Debug.Log($"{unitName} takes no HP damage.");
+        }
+    }
+
+    public void AddBlock(int amount)
+    {
+        currentBlock += amount;
+        Debug.Log($"{unitName} gains {amount} Block. Current Block: {currentBlock}");
+    }
+
+    public void ResetBlock()
+    {
+        currentBlock = 0;
     }
 
     public bool IsDead()
