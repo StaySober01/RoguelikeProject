@@ -64,6 +64,12 @@ public class StatusEffectController : MonoBehaviour
         target.TakeDamage(burnExplosionDamage);
         target.statusData.Clear(StatusEffectType.Burn);
 
+        if (target.statusData.Has(StatusEffectType.Poison))
+        {
+            Debug.Log("Synergy result: Poison removed due to explosion");
+            target.statusData.Clear(StatusEffectType.Poison);
+        }
+
         if (reapplyBurnAfterExplosion)
         {
             Debug.Log("Passive triggered: Reapply Burn 1 after explosion");
