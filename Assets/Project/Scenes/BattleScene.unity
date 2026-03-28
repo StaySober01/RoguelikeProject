@@ -119,6 +119,39 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &7146362
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7146363}
+  m_Layer: 0
+  m_Name: BattleManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7146363
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7146362}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 924960897}
+  - {fileID: 1978561906}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &15218008
 GameObject:
   m_ObjectHideFlags: 0
@@ -1111,8 +1144,6 @@ MonoBehaviour:
   currentHp: 25
   attackPower: 7
   currentBlock: 0
-  poisonStack: 0
-  burnStack: 0
 --- !u!1 &430475659
 GameObject:
   m_ObjectHideFlags: 0
@@ -2295,6 +2326,8 @@ MonoBehaviour:
   attackButton: {fileID: 257365942}
   heavyAttackButton: {fileID: 573521844}
   defendButton: {fileID: 15218010}
+  poisonButton: {fileID: 1431770971}
+  burnButton: {fileID: 331611652}
   endTurnButton: {fileID: 208358209}
   playerHpText: {fileID: 432419065}
   enemyHpText: {fileID: 842853015}
@@ -2305,13 +2338,14 @@ MonoBehaviour:
   normalAttackCost: 1
   heavyAttackCost: 2
   defendCost: 1
+  poisonCost: 1
+  burnCost: 1
   heavyAttackDamage: 10
   defendBlockAmount: 6
-  burnExplosionThreshold: 3
-  poisonDamagePerStack: 1
-  burnExplosionDamage: 8
-  bonusPoisonOnApply: 1
-  reapplyBurnAfterExplosion: 1
+  playerActionDelay: 0.5
+  enemyActionDelay: 1
+  enemyTurnEndDelay: 0.3
+  statusEffectController: {fileID: 1978561907}
 --- !u!4 &924960897
 Transform:
   m_ObjectHideFlags: 0
@@ -2320,12 +2354,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 924960895}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 7146363}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1324533168
 GameObject:
@@ -2376,8 +2410,6 @@ MonoBehaviour:
   currentHp: 30
   attackPower: 7
   currentBlock: 0
-  poisonStack: 0
-  burnStack: 0
 --- !u!1 &1348571145
 GameObject:
   m_ObjectHideFlags: 0
@@ -2785,6 +2817,55 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1923503682}
   m_CullTransparentMesh: 1
+--- !u!1 &1978561905
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1978561906}
+  - component: {fileID: 1978561907}
+  m_Layer: 0
+  m_Name: StatusEffectController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1978561906
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1978561905}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7146363}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1978561907
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1978561905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 159c0ca54ac6ad84a85094b5772265a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatusEffectController
+  burnExplosionThreshold: 3
+  poisonDamagePerStack: 1
+  burnExplosionDamage: 8
+  bonusPoisonOnApply: 1
+  reapplyBurnAfterExplosion: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2794,4 +2875,4 @@ SceneRoots:
   - {fileID: 332133012}
   - {fileID: 430475663}
   - {fileID: 904211628}
-  - {fileID: 924960897}
+  - {fileID: 7146363}

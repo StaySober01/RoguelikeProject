@@ -40,18 +40,13 @@ public class BattleManager : MonoBehaviour
     public int heavyAttackDamage = 10;
     public int defendBlockAmount = 6;
 
-    [Header("Status Effect Values")]
-    public int burnExplosionThreshold = 3;
-    public int burnExplosionDamage = 8;
-
-    [Header("Passive Toggles")]
-    public bool bonusPoisonOnApply = true;
-    public bool reapplyBurnAfterExplosion = true;
-
     [Header("Timings")]
     public float playerActionDelay = 0.5f;
     public float enemyActionDelay = 1.0f;
     public float enemyTurnEndDelay = 0.3f;
+
+    [Header("Controllers")]
+    public StatusEffectController statusEffectController;
 
     private void Start()
     {
@@ -143,7 +138,7 @@ public class BattleManager : MonoBehaviour
             () =>
             {
                 Debug.Log("Player uses Poison");
-                ApplyPoisonToEnemy(1);
+                statusEffectController.ApplyPoison(enemyUnit, 1);
             });
     }
 
@@ -155,7 +150,7 @@ public class BattleManager : MonoBehaviour
             () =>
             {
                 Debug.Log("Player uses Burn");
-                ApplyBurnToEnemy(1);
+                statusEffectController.ApplyBurn(enemyUnit, 1);
             });
     }
 
@@ -216,7 +211,7 @@ public class BattleManager : MonoBehaviour
 
         yield return new WaitForSeconds(playerActionDelay);
 
-        ProcessEnemyTurnEndStatusEffects();
+        statusEffectController.ProcessTurnEnd(enemyUnit);
 
         yield return new WaitForSeconds(enemyTurnEndDelay);
 
@@ -225,67 +220,6 @@ public class BattleManager : MonoBehaviour
 
         Debug.Log("Enemy Turn End");
         StartPlayerTurn();
-    }
-
-    #endregion
-
-    #region Status Effects
-
-    private void ApplyPoisonToEnemy(int amount)
-    {
-        if (bonusPoisonOnApply)
-        {
-            amount += 1;
-            Debug.Log("Passive triggered: Poison application +1");
-        }
-
-        enemyUnit.ApplyPoison(amount);
-        UpdateDebugUI();
-    }
-
-    private void ApplyBurnToEnemy(int amount)
-    {
-        enemyUnit.ApplyBurn(amount);
-
-        if (enemyUnit.HasPoison())
-        {
-            Debug.Log("Synergy triggered: Burn applied to poisoned enemy -> immediate explosion");
-            TriggerBurnExplosion(enemyUnit);
-            UpdateDebugUI();
-            return;
-        }
-
-        if (enemyUnit.burnStack >= burnExplosionThreshold)
-        {
-            TriggerBurnExplosion(enemyUnit);
-        }
-
-        UpdateDebugUI();
-    }
-
-    private void TriggerBurnExplosion(Unit target)
-    {
-        Debug.Log($"{target.unitName}'s Burn explodes!");
-        target.TakeDamage(burnExplosionDamage);
-        target.ClearBurn();
-
-        if (reapplyBurnAfterExplosion)
-        {
-            Debug.Log("Passive triggered: Reapply Burn 1 after explosion");
-            target.ApplyBurn(1);
-        }
-    }
-
-    private void ProcessEnemyTurnEndStatusEffects()
-    {
-        if (enemyUnit.poisonStack > 0)
-        {
-            int poisonDamage = enemyUnit.poisonStack;
-            Debug.Log($"{enemyUnit.unitName} takes {poisonDamage} poison damage at turn end.");
-            enemyUnit.TakeDamage(poisonDamage);
-        }
-
-        UpdateDebugUI();
     }
 
     #endregion
@@ -369,13 +303,19 @@ public class BattleManager : MonoBehaviour
 
     private void UpdateDebugUI()
     {
+        int playerPoison = statusEffectController.GetStack(playerUnit, StatusEffectType.Poison);
+        int playerBurn = statusEffectController.GetStack(playerUnit, StatusEffectType.Burn);
+
+        int enemyPoison = statusEffectController.GetStack(enemyUnit, StatusEffectType.Poison);
+        int enemyBurn = statusEffectController.GetStack(enemyUnit, StatusEffectType.Burn);
+
         if (playerHpText != null)
         {
             playerHpText.text =
                 $"Player HP: {playerUnit.currentHp}/{playerUnit.maxHp}  " +
                 $"Block: {playerUnit.currentBlock}  " +
-                $"Poison: {playerUnit.poisonStack}  " +
-                $"Burn: {playerUnit.burnStack}";
+                $"Poison: {playerPoison}  " +
+                $"Burn: {playerBurn}";
         }
 
         if (enemyHpText != null)
@@ -383,8 +323,8 @@ public class BattleManager : MonoBehaviour
             enemyHpText.text =
                 $"Enemy HP: {enemyUnit.currentHp}/{enemyUnit.maxHp}  " +
                 $"Block: {enemyUnit.currentBlock}  " +
-                $"Poison: {enemyUnit.poisonStack}  " +
-                $"Burn: {enemyUnit.burnStack}";
+                $"Poison: {enemyPoison}  " +
+                $"Burn: {enemyBurn}";
         }
 
         if (energyText != null)

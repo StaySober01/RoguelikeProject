@@ -8,16 +8,12 @@ public class Unit : MonoBehaviour
     public int attackPower = 5;
     public int currentBlock = 0;
 
-    [Header("Status Effects")]
-    public int poisonStack = 0;
-    public int burnStack = 0;
+    public UnitStatusData statusData = new();
 
     private void Awake()
     {
         currentHp = maxHp;
         currentBlock = 0;
-        poisonStack = 0;
-        burnStack = 0;
     }
 
     public void TakeDamage(int damage)
@@ -56,28 +52,6 @@ public class Unit : MonoBehaviour
     public void ResetBlock()
     {
         currentBlock = 0;
-    }
-
-    public void ApplyPoison(int amount)
-    {
-        poisonStack += amount;
-        Debug.Log($"{unitName} gains {amount} Poison. Current Poison: {poisonStack}");
-    }
-
-    public void ApplyBurn(int amount)
-    {
-        burnStack += amount;
-        Debug.Log($"{unitName} gains {amount} Burn. Current Burn: {burnStack}");
-    }
-
-    public void ClearBurn()
-    {
-        burnStack = 0;
-    }
-
-    public bool HasPoison()
-    {
-        return poisonStack > 0;
     }
 
     public bool IsDead()
