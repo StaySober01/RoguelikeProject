@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,8 @@ public class BattleManager : MonoBehaviour
     public Button attackButton;
     public Button heavyAttackButton;
     public Button defendButton;
+    public Button poisonButton;
+    public Button burnButton;
     public Button endTurnButton;
 
     [Header("Debug UI")]
@@ -31,180 +34,318 @@ public class BattleManager : MonoBehaviour
     public int normalAttackCost = 1;
     public int heavyAttackCost = 2;
     public int defendCost = 1;
+    public int poisonCost = 1;
+    public int burnCost = 1;
 
     public int heavyAttackDamage = 10;
     public int defendBlockAmount = 6;
+
+    [Header("Status Effect Values")]
+    public int burnExplosionThreshold = 3;
+    public int burnExplosionDamage = 8;
+
+    [Header("Passive Toggles")]
+    public bool bonusPoisonOnApply = true;
+    public bool reapplyBurnAfterExplosion = true;
+
+    [Header("Timings")]
+    public float playerActionDelay = 0.5f;
+    public float enemyActionDelay = 1.0f;
+    public float enemyTurnEndDelay = 0.3f;
 
     private void Start()
     {
         StartBattle();
     }
 
+    #region Battle Flow
+
     public void StartBattle()
     {
         Debug.Log("Battle Start");
         StartPlayerTurn();
-        UpdateDebugUI();
     }
 
     public void StartPlayerTurn()
     {
         playerUnit.ResetBlock();
-
-        state = BattleState.PlayerTurn;
         currentEnergy = maxEnergy;
+        SetState(BattleState.PlayerTurn);
 
         Debug.Log($"Player Turn Start - Energy: {currentEnergy}/{maxEnergy}");
-
         RefreshActionButtons();
-        UpdateDebugUI();
     }
 
     public void StartEnemyTurn()
     {
-        state = BattleState.EnemyTurn;
+        SetState(BattleState.EnemyTurn);
         Debug.Log("Enemy Turn Start");
-
         SetPlayerActionButtons(false);
-        UpdateDebugUI();
 
-        StartCoroutine(EnemyAttackRoutine());
-    }
-
-    public void OnClickAttack()
-    {
-        if (state != BattleState.PlayerTurn)
-            return;
-
-        if (currentEnergy < normalAttackCost)
-        {
-            Debug.Log("Not enough energy for normal attack.");
-            return;
-        }
-
-        StartCoroutine(PlayerAttackRoutine(playerUnit.attackPower, normalAttackCost, "Attack"));
-    }
-
-    public void OnClickHeavyAttack()
-    {
-        if (state != BattleState.PlayerTurn)
-            return;
-
-        if (currentEnergy < heavyAttackCost)
-        {
-            Debug.Log("Not enough energy for heavy attack.");
-            return;
-        }
-
-        StartCoroutine(PlayerAttackRoutine(heavyAttackDamage, heavyAttackCost, "Heavy Attack"));
-    }
-
-    public void OnClickDefend()
-    {
-        if (state != BattleState.PlayerTurn)
-            return;
-
-        if (currentEnergy < defendCost)
-        {
-            Debug.Log("Not enough energy to defend.");
-            return;
-        }
-
-        StartCoroutine(PlayerDefendRoutine());
+        StartCoroutine(EnemyTurnRoutine());
     }
 
     public void OnClickEndTurn()
     {
-        if (state != BattleState.PlayerTurn)
+        if (!CanPlayerAct())
             return;
 
         Debug.Log("Player ends turn");
         SetPlayerActionButtons(false);
-        UpdateDebugUI();
-
         StartEnemyTurn();
     }
 
-    private IEnumerator PlayerAttackRoutine(int damage, int cost, string actionName)
+    #endregion
+
+    #region Player Actions
+
+    public void OnClickAttack()
     {
-        state = BattleState.Busy;
-        SetPlayerActionButtons(false);
+        TryStartPlayerAction(
+            normalAttackCost,
+            "Not enough energy for normal attack.",
+            () =>
+            {
+                Debug.Log($"Player uses Attack on {enemyUnit.unitName}");
+                enemyUnit.TakeDamage(playerUnit.attackPower);
+            });
+    }
 
-        currentEnergy -= cost;
-        Debug.Log($"Player uses {actionName} on {enemyUnit.unitName} (Cost: {cost}, Energy: {currentEnergy}/{maxEnergy})");
+    public void OnClickHeavyAttack()
+    {
+        TryStartPlayerAction(
+            heavyAttackCost,
+            "Not enough energy for heavy attack.",
+            () =>
+            {
+                Debug.Log($"Player uses Heavy Attack on {enemyUnit.unitName}");
+                enemyUnit.TakeDamage(heavyAttackDamage);
+            });
+    }
 
-        enemyUnit.TakeDamage(damage);
-        UpdateDebugUI();
+    public void OnClickDefend()
+    {
+        TryStartPlayerAction(
+            defendCost,
+            "Not enough energy to defend.",
+            () =>
+            {
+                Debug.Log($"Player uses Defend");
+                playerUnit.AddBlock(defendBlockAmount);
+            });
+    }
 
-        yield return new WaitForSeconds(0.5f);
+    public void OnClickPoison()
+    {
+        TryStartPlayerAction(
+            poisonCost,
+            "Not enough energy to use Poison.",
+            () =>
+            {
+                Debug.Log("Player uses Poison");
+                ApplyPoisonToEnemy(1);
+            });
+    }
 
-        if (enemyUnit.IsDead())
+    public void OnClickBurn()
+    {
+        TryStartPlayerAction(
+            burnCost,
+            "Not enough energy to use Burn.",
+            () =>
+            {
+                Debug.Log("Player uses Burn");
+                ApplyBurnToEnemy(1);
+            });
+    }
+
+    private void TryStartPlayerAction(int cost, string failLog, Action action)
+    {
+        if (!CanPlayerAct())
+            return;
+
+        if (!HasEnoughEnergy(cost))
         {
-            state = BattleState.Win;
-            Debug.Log("Player Wins!");
-            SetPlayerActionButtons(false);
-            UpdateDebugUI();
-            yield break;
+            Debug.Log(failLog);
+            return;
         }
 
-        state = BattleState.PlayerTurn;
-        Debug.Log($"Player action complete. Remaining Energy: {currentEnergy}/{maxEnergy}");
-
-        RefreshActionButtons();
-        UpdateDebugUI();
+        StartCoroutine(PlayerActionRoutine(cost, action));
     }
 
-    private IEnumerator PlayerDefendRoutine()
+    private IEnumerator PlayerActionRoutine(int cost, Action action)
     {
-        state = BattleState.Busy;
+        SetState(BattleState.Busy);
         SetPlayerActionButtons(false);
 
-        currentEnergy -= defendCost;
-        Debug.Log($"Player uses Defend (Cost: {defendCost}, Energy: {currentEnergy}/{maxEnergy})");
-
-        playerUnit.AddBlock(defendBlockAmount);
+        SpendEnergy(cost);
+        action?.Invoke();
         UpdateDebugUI();
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(playerActionDelay);
 
-        state = BattleState.PlayerTurn;
-        Debug.Log($"Player action complete. Remaining Energy: {currentEnergy}/{maxEnergy}");
+        if (CheckBattleEnd())
+            yield break;
 
-        RefreshActionButtons();
-        UpdateDebugUI();
+        EndPlayerAction();
     }
 
-    private IEnumerator EnemyAttackRoutine()
+    private void EndPlayerAction()
     {
-        state = BattleState.Busy;
-        UpdateDebugUI();
+        SetState(BattleState.PlayerTurn);
+        Debug.Log($"Player action complete. Remaining Energy: {currentEnergy}/{maxEnergy}");
+        RefreshActionButtons();
+    }
 
-        yield return new WaitForSeconds(1f);
+    #endregion
+
+    #region Enemy Turn
+
+    private IEnumerator EnemyTurnRoutine()
+    {
+        SetState(BattleState.Busy);
+
+        yield return new WaitForSeconds(enemyActionDelay);
 
         Debug.Log($"{enemyUnit.unitName} attacks Player");
         playerUnit.TakeDamage(enemyUnit.attackPower);
         UpdateDebugUI();
 
-        yield return new WaitForSeconds(0.5f);
-
-        if (playerUnit.IsDead())
-        {
-            state = BattleState.Lose;
-            Debug.Log("Player Loses...");
-            SetPlayerActionButtons(false);
-            UpdateDebugUI();
+        if (CheckBattleEnd())
             yield break;
-        }
+
+        yield return new WaitForSeconds(playerActionDelay);
+
+        ProcessEnemyTurnEndStatusEffects();
+
+        yield return new WaitForSeconds(enemyTurnEndDelay);
+
+        if (CheckBattleEnd())
+            yield break;
 
         Debug.Log("Enemy Turn End");
         StartPlayerTurn();
     }
+
+    #endregion
+
+    #region Status Effects
+
+    private void ApplyPoisonToEnemy(int amount)
+    {
+        if (bonusPoisonOnApply)
+        {
+            amount += 1;
+            Debug.Log("Passive triggered: Poison application +1");
+        }
+
+        enemyUnit.ApplyPoison(amount);
+        UpdateDebugUI();
+    }
+
+    private void ApplyBurnToEnemy(int amount)
+    {
+        enemyUnit.ApplyBurn(amount);
+
+        if (enemyUnit.HasPoison())
+        {
+            Debug.Log("Synergy triggered: Burn applied to poisoned enemy -> immediate explosion");
+            TriggerBurnExplosion(enemyUnit);
+            UpdateDebugUI();
+            return;
+        }
+
+        if (enemyUnit.burnStack >= burnExplosionThreshold)
+        {
+            TriggerBurnExplosion(enemyUnit);
+        }
+
+        UpdateDebugUI();
+    }
+
+    private void TriggerBurnExplosion(Unit target)
+    {
+        Debug.Log($"{target.unitName}'s Burn explodes!");
+        target.TakeDamage(burnExplosionDamage);
+        target.ClearBurn();
+
+        if (reapplyBurnAfterExplosion)
+        {
+            Debug.Log("Passive triggered: Reapply Burn 1 after explosion");
+            target.ApplyBurn(1);
+        }
+    }
+
+    private void ProcessEnemyTurnEndStatusEffects()
+    {
+        if (enemyUnit.poisonStack > 0)
+        {
+            int poisonDamage = enemyUnit.poisonStack;
+            Debug.Log($"{enemyUnit.unitName} takes {poisonDamage} poison damage at turn end.");
+            enemyUnit.TakeDamage(poisonDamage);
+        }
+
+        UpdateDebugUI();
+    }
+
+    #endregion
+
+    #region Helpers
+
+    private bool CanPlayerAct()
+    {
+        return state == BattleState.PlayerTurn;
+    }
+
+    private bool HasEnoughEnergy(int cost)
+    {
+        return currentEnergy >= cost;
+    }
+
+    private void SpendEnergy(int cost)
+    {
+        currentEnergy -= cost;
+        Debug.Log($"Energy spent: {cost} -> {currentEnergy}/{maxEnergy}");
+    }
+
+    private void SetState(BattleState newState)
+    {
+        state = newState;
+        UpdateDebugUI();
+    }
+
+    private bool CheckBattleEnd()
+    {
+        if (enemyUnit.IsDead())
+        {
+            SetState(BattleState.Win);
+            Debug.Log("Player Wins!");
+            SetPlayerActionButtons(false);
+            return true;
+        }
+
+        if (playerUnit.IsDead())
+        {
+            SetState(BattleState.Lose);
+            Debug.Log("Player Loses...");
+            SetPlayerActionButtons(false);
+            return true;
+        }
+
+        return false;
+    }
+
+    #endregion
+
+    #region UI
 
     private void SetPlayerActionButtons(bool isActive)
     {
         attackButton.interactable = isActive;
         heavyAttackButton.interactable = isActive;
         defendButton.interactable = isActive;
+        poisonButton.interactable = isActive;
+        burnButton.interactable = isActive;
         endTurnButton.interactable = isActive;
     }
 
@@ -216,19 +357,35 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        attackButton.interactable = currentEnergy >= normalAttackCost;
-        heavyAttackButton.interactable = currentEnergy >= heavyAttackCost;
-        defendButton.interactable = currentEnergy >= defendCost;
+        attackButton.interactable = HasEnoughEnergy(normalAttackCost);
+        heavyAttackButton.interactable = HasEnoughEnergy(heavyAttackCost);
+        defendButton.interactable = HasEnoughEnergy(defendCost);
+        poisonButton.interactable = HasEnoughEnergy(poisonCost);
+        burnButton.interactable = HasEnoughEnergy(burnCost);
         endTurnButton.interactable = true;
+
+        UpdateDebugUI();
     }
 
     private void UpdateDebugUI()
     {
         if (playerHpText != null)
-            playerHpText.text = $"Player HP: {playerUnit.currentHp}/{playerUnit.maxHp}  Block: {playerUnit.currentBlock}";
+        {
+            playerHpText.text =
+                $"Player HP: {playerUnit.currentHp}/{playerUnit.maxHp}  " +
+                $"Block: {playerUnit.currentBlock}  " +
+                $"Poison: {playerUnit.poisonStack}  " +
+                $"Burn: {playerUnit.burnStack}";
+        }
 
         if (enemyHpText != null)
-            enemyHpText.text = $"Enemy HP: {enemyUnit.currentHp}/{enemyUnit.maxHp}  Block: {enemyUnit.currentBlock}";
+        {
+            enemyHpText.text =
+                $"Enemy HP: {enemyUnit.currentHp}/{enemyUnit.maxHp}  " +
+                $"Block: {enemyUnit.currentBlock}  " +
+                $"Poison: {enemyUnit.poisonStack}  " +
+                $"Burn: {enemyUnit.burnStack}";
+        }
 
         if (energyText != null)
             energyText.text = $"Energy: {currentEnergy}/{maxEnergy}";
@@ -236,4 +393,6 @@ public class BattleManager : MonoBehaviour
         if (stateText != null)
             stateText.text = $"State: {state}";
     }
+
+    #endregion
 }
