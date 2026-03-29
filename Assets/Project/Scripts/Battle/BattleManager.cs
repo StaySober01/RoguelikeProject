@@ -6,6 +6,8 @@ using TMPro;
 
 public class BattleManager : MonoBehaviour
 {
+    #region field
+
     public BattleState state;
 
     [Header("Units")]
@@ -47,6 +49,8 @@ public class BattleManager : MonoBehaviour
 
     [Header("Controllers")]
     public StatusEffectController statusEffectController;
+
+    #endregion
 
     private void Start()
     {
