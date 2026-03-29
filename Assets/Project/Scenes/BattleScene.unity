@@ -165,7 +165,7 @@ GameObject:
   - component: {fileID: 15218011}
   - component: {fileID: 15218010}
   m_Layer: 5
-  m_Name: DefendButton
+  m_Name: Hand3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -342,7 +342,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Poison(1)
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -612,7 +612,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Attack (1)
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -705,7 +705,7 @@ GameObject:
   - component: {fileID: 257365943}
   - component: {fileID: 257365942}
   m_Layer: 5
-  m_Name: AttackButton
+  m_Name: Hand1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -882,7 +882,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Burn(1)
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -975,7 +975,7 @@ GameObject:
   - component: {fileID: 331611653}
   - component: {fileID: 331611652}
   m_Layer: 5
-  m_Name: Burnbutton
+  m_Name: Hand5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1449,7 +1449,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Defend (1)
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1542,7 +1542,7 @@ GameObject:
   - component: {fileID: 573521845}
   - component: {fileID: 573521844}
   m_Layer: 5
-  m_Name: HeavyAttackButton
+  m_Name: Hand2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1719,7 +1719,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Heavy attack (2)
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2301,6 +2301,7 @@ GameObject:
   m_Component:
   - component: {fileID: 924960897}
   - component: {fileID: 924960896}
+  - component: {fileID: 924960898}
   m_Layer: 0
   m_Name: BattleManager
   m_TagString: Untagged
@@ -2323,28 +2324,31 @@ MonoBehaviour:
   state: 0
   playerUnit: {fileID: 1324533170}
   enemyUnit: {fileID: 332133013}
-  attackButton: {fileID: 257365942}
-  heavyAttackButton: {fileID: 573521844}
-  defendButton: {fileID: 15218010}
-  poisonButton: {fileID: 1431770971}
-  burnButton: {fileID: 331611652}
+  maxEnergy: 3
+  currentEnergy: 0
+  enemyAttackDelay: 1
+  actionDelay: 0.5
+  drawCountPerTurn: 3
+  maxHandSize: 5
+  drawPile: []
+  hand: []
+  handButtons:
+  - {fileID: 257365942}
+  - {fileID: 573521844}
+  - {fileID: 15218010}
+  - {fileID: 1431770971}
+  - {fileID: 331611652}
+  handButtonTexts:
+  - {fileID: 243742441}
+  - {fileID: 594171023}
+  - {fileID: 472133345}
+  - {fileID: 23008892}
+  - {fileID: 268694459}
   endTurnButton: {fileID: 208358209}
   playerHpText: {fileID: 432419065}
   enemyHpText: {fileID: 842853015}
   energyText: {fileID: 1923503684}
   stateText: {fileID: 730051103}
-  maxEnergy: 3
-  currentEnergy: 0
-  normalAttackCost: 1
-  heavyAttackCost: 2
-  defendCost: 1
-  poisonCost: 1
-  burnCost: 1
-  heavyAttackDamage: 10
-  defendBlockAmount: 6
-  playerActionDelay: 0.5
-  enemyActionDelay: 1
-  enemyTurnEndDelay: 0.3
   statusEffectController: {fileID: 1978561907}
 --- !u!4 &924960897
 Transform:
@@ -2361,6 +2365,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7146363}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &924960898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 924960895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 159c0ca54ac6ad84a85094b5772265a9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StatusEffectController
+  burnExplosionThreshold: 3
+  poisonDamagePerStack: 1
+  burnExplosionDamage: 8
+  bonusPoisonOnApply: 1
+  reapplyBurnAfterExplosion: 1
 --- !u!1 &1324533168
 GameObject:
   m_ObjectHideFlags: 0
@@ -2560,7 +2581,7 @@ GameObject:
   - component: {fileID: 1431770972}
   - component: {fileID: 1431770971}
   m_Layer: 5
-  m_Name: PoisonButton
+  m_Name: Hand4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,25 +1,37 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
 public class BattleManager : MonoBehaviour
 {
-    #region field
-
     public BattleState state;
 
     [Header("Units")]
     public Unit playerUnit;
     public Unit enemyUnit;
 
-    [Header("UI Buttons")]
-    public Button attackButton;
-    public Button heavyAttackButton;
-    public Button defendButton;
-    public Button poisonButton;
-    public Button burnButton;
+    [Header("Turn / Energy")]
+    public int maxEnergy = 3;
+    [SerializeField] private int currentEnergy;
+
+    [Header("Battle Values")]
+    public int enemyAttackDelay = 1;
+    public float actionDelay = 0.5f;
+
+    [Header("Card System")]
+    public int drawCountPerTurn = 3;
+    public int maxHandSize = 5;
+    public List<CardInstance> drawPile = new List<CardInstance>();
+    public List<CardInstance> hand = new List<CardInstance>();
+
+    [Header("UI - Hand")]
+    public Button[] handButtons;
+    public TextMeshProUGUI[] handButtonTexts;
+
+    [Header("UI - Turn")]
     public Button endTurnButton;
 
     [Header("Debug UI")]
@@ -28,29 +40,8 @@ public class BattleManager : MonoBehaviour
     public TextMeshProUGUI energyText;
     public TextMeshProUGUI stateText;
 
-    [Header("Energy")]
-    public int maxEnergy = 3;
-    [SerializeField] private int currentEnergy;
-
-    [Header("Action Values")]
-    public int normalAttackCost = 1;
-    public int heavyAttackCost = 2;
-    public int defendCost = 1;
-    public int poisonCost = 1;
-    public int burnCost = 1;
-
-    public int heavyAttackDamage = 10;
-    public int defendBlockAmount = 6;
-
-    [Header("Timings")]
-    public float playerActionDelay = 0.5f;
-    public float enemyActionDelay = 1.0f;
-    public float enemyTurnEndDelay = 0.3f;
-
     [Header("Controllers")]
     public StatusEffectController statusEffectController;
-
-    #endregion
 
     private void Start()
     {
@@ -61,6 +52,7 @@ public class BattleManager : MonoBehaviour
 
     public void StartBattle()
     {
+        InitializeDeck();
         Debug.Log("Battle Start");
         StartPlayerTurn();
     }
@@ -71,129 +63,30 @@ public class BattleManager : MonoBehaviour
         currentEnergy = maxEnergy;
         SetState(BattleState.PlayerTurn);
 
+        DiscardHand();
+        DrawCards(drawCountPerTurn);
+
         Debug.Log($"Player Turn Start - Energy: {currentEnergy}/{maxEnergy}");
-        RefreshActionButtons();
+        RefreshUI();
     }
 
     public void StartEnemyTurn()
     {
         SetState(BattleState.EnemyTurn);
         Debug.Log("Enemy Turn Start");
-        SetPlayerActionButtons(false);
+        RefreshUI();
 
         StartCoroutine(EnemyTurnRoutine());
     }
 
     public void OnClickEndTurn()
     {
-        if (!CanPlayerAct())
+        if (state != BattleState.PlayerTurn)
             return;
 
         Debug.Log("Player ends turn");
-        SetPlayerActionButtons(false);
+        RefreshUI();
         StartEnemyTurn();
-    }
-
-    #endregion
-
-    #region Player Actions
-
-    public void OnClickAttack()
-    {
-        TryStartPlayerAction(
-            normalAttackCost,
-            "Not enough energy for normal attack.",
-            () =>
-            {
-                Debug.Log($"Player uses Attack on {enemyUnit.unitName}");
-                enemyUnit.TakeDamage(playerUnit.attackPower);
-            });
-    }
-
-    public void OnClickHeavyAttack()
-    {
-        TryStartPlayerAction(
-            heavyAttackCost,
-            "Not enough energy for heavy attack.",
-            () =>
-            {
-                Debug.Log($"Player uses Heavy Attack on {enemyUnit.unitName}");
-                enemyUnit.TakeDamage(heavyAttackDamage);
-            });
-    }
-
-    public void OnClickDefend()
-    {
-        TryStartPlayerAction(
-            defendCost,
-            "Not enough energy to defend.",
-            () =>
-            {
-                Debug.Log($"Player uses Defend");
-                playerUnit.AddBlock(defendBlockAmount);
-            });
-    }
-
-    public void OnClickPoison()
-    {
-        TryStartPlayerAction(
-            poisonCost,
-            "Not enough energy to use Poison.",
-            () =>
-            {
-                Debug.Log("Player uses Poison");
-                statusEffectController.ApplyPoison(enemyUnit, 1);
-            });
-    }
-
-    public void OnClickBurn()
-    {
-        TryStartPlayerAction(
-            burnCost,
-            "Not enough energy to use Burn.",
-            () =>
-            {
-                Debug.Log("Player uses Burn");
-                statusEffectController.ApplyBurn(enemyUnit, 1);
-            });
-    }
-
-    private void TryStartPlayerAction(int cost, string failLog, Action action)
-    {
-        if (!CanPlayerAct())
-            return;
-
-        if (!HasEnoughEnergy(cost))
-        {
-            Debug.Log(failLog);
-            return;
-        }
-
-        StartCoroutine(PlayerActionRoutine(cost, action));
-    }
-
-    private IEnumerator PlayerActionRoutine(int cost, Action action)
-    {
-        SetState(BattleState.Busy);
-        SetPlayerActionButtons(false);
-
-        SpendEnergy(cost);
-        action?.Invoke();
-        UpdateDebugUI();
-
-        yield return new WaitForSeconds(playerActionDelay);
-
-        if (CheckBattleEnd())
-            yield break;
-
-        EndPlayerAction();
-    }
-
-    private void EndPlayerAction()
-    {
-        SetState(BattleState.PlayerTurn);
-        Debug.Log($"Player action complete. Remaining Energy: {currentEnergy}/{maxEnergy}");
-        RefreshActionButtons();
     }
 
     #endregion
@@ -203,24 +96,26 @@ public class BattleManager : MonoBehaviour
     private IEnumerator EnemyTurnRoutine()
     {
         SetState(BattleState.Busy);
+        RefreshUI();
 
-        yield return new WaitForSeconds(enemyActionDelay);
+        yield return new WaitForSeconds(enemyAttackDelay);
 
         Debug.Log($"{enemyUnit.unitName} attacks Player");
         playerUnit.TakeDamage(enemyUnit.attackPower);
-        UpdateDebugUI();
+        RefreshUI();
 
         if (CheckBattleEnd())
             yield break;
 
-        yield return new WaitForSeconds(playerActionDelay);
+        yield return new WaitForSeconds(actionDelay);
 
         statusEffectController.ProcessTurnEnd(enemyUnit);
-
-        yield return new WaitForSeconds(enemyTurnEndDelay);
+        RefreshUI();
 
         if (CheckBattleEnd())
             yield break;
+
+        yield return new WaitForSeconds(actionDelay);
 
         Debug.Log("Enemy Turn End");
         StartPlayerTurn();
@@ -228,23 +123,132 @@ public class BattleManager : MonoBehaviour
 
     #endregion
 
-    #region Helpers
+    #region Card System
 
-    private bool CanPlayerAct()
+    private void InitializeDeck()
     {
-        return state == BattleState.PlayerTurn;
+        drawPile = CardFactory.CreateStarterDeck();
+        hand.Clear();
+        ShuffleDrawPile();
     }
 
-    private bool HasEnoughEnergy(int cost)
+    private void ShuffleDrawPile()
     {
-        return currentEnergy >= cost;
+        for (int i = 0; i < drawPile.Count; i++)
+        {
+            CardInstance temp = drawPile[i];
+            int randomIndex = UnityEngine.Random.Range(i, drawPile.Count);
+            drawPile[i] = drawPile[randomIndex];
+            drawPile[randomIndex] = temp;
+        }
     }
 
-    private void SpendEnergy(int cost)
+    private void DrawCards(int amount)
     {
-        currentEnergy -= cost;
-        Debug.Log($"Energy spent: {cost} -> {currentEnergy}/{maxEnergy}");
+        for (int i = 0; i < amount; i++)
+        {
+            if (hand.Count >= maxHandSize)
+            {
+                Debug.Log("Hand is full.");
+                break;
+            }
+
+            if (drawPile.Count == 0)
+            {
+                Debug.Log("Draw pile is empty.");
+                break;
+            }
+
+            CardInstance drawnCard = drawPile[0];
+            drawPile.RemoveAt(0);
+            hand.Add(drawnCard);
+
+            Debug.Log($"Drew card: {drawnCard.CardName}");
+        }
+
+        UpdateHandUI();
     }
+
+    private void DiscardHand()
+    {
+        hand.Clear();
+        UpdateHandUI();
+    }
+
+    public void UseCard(CardInstance card)
+    {
+        if (state != BattleState.PlayerTurn)
+            return;
+
+        if (!hand.Contains(card))
+            return;
+
+        if (currentEnergy < card.Cost)
+        {
+            Debug.Log($"Not enough energy to use {card.CardName}");
+            return;
+        }
+
+        StartCoroutine(PlayerUseCardRoutine(card));
+    }
+
+    private IEnumerator PlayerUseCardRoutine(CardInstance card)
+    {
+        SetState(BattleState.Busy);
+        RefreshUI();
+
+        currentEnergy -= card.Cost;
+        Debug.Log($"Player uses {card.CardName} (Cost: {card.Cost}, Energy: {currentEnergy}/{maxEnergy})");
+
+        ResolveCardEffect(card);
+
+        hand.Remove(card);
+        UpdateHandUI();
+        UpdateDebugUI();
+
+        yield return new WaitForSeconds(actionDelay);
+
+        if (CheckBattleEnd())
+            yield break;
+
+        SetState(BattleState.PlayerTurn);
+        Debug.Log($"Player action complete. Remaining Energy: {currentEnergy}/{maxEnergy}");
+        RefreshUI();
+    }
+
+    private void ResolveCardEffect(CardInstance card)
+    {
+        switch (card.EffectType)
+        {
+            case CardEffectType.DealDamage:
+                enemyUnit.TakeDamage(card.Amount);
+                Debug.Log($"{card.CardName} deals {card.Amount} damage.");
+                break;
+
+            case CardEffectType.GainBlock:
+                playerUnit.AddBlock(card.Amount);
+                Debug.Log($"{card.CardName} grants {card.Amount} Block.");
+                break;
+
+            case CardEffectType.ApplyPoison:
+                statusEffectController.ApplyPoison(enemyUnit, card.Amount);
+                Debug.Log($"{card.CardName} applies {card.Amount} Poison.");
+                break;
+
+            case CardEffectType.ApplyBurn:
+                statusEffectController.ApplyBurn(enemyUnit, card.Amount);
+                Debug.Log($"{card.CardName} applies {card.Amount} Burn.");
+                break;
+
+            default:
+                Debug.LogWarning($"Unhandled card effect: {card.EffectType}");
+                break;
+        }
+    }
+
+    #endregion
+
+    #region Battle Helpers
 
     private void SetState(BattleState newState)
     {
@@ -258,7 +262,7 @@ public class BattleManager : MonoBehaviour
         {
             SetState(BattleState.Win);
             Debug.Log("Player Wins!");
-            SetPlayerActionButtons(false);
+            RefreshUI();
             return true;
         }
 
@@ -266,7 +270,7 @@ public class BattleManager : MonoBehaviour
         {
             SetState(BattleState.Lose);
             Debug.Log("Player Loses...");
-            SetPlayerActionButtons(false);
+            RefreshUI();
             return true;
         }
 
@@ -277,43 +281,64 @@ public class BattleManager : MonoBehaviour
 
     #region UI
 
-    private void SetPlayerActionButtons(bool isActive)
+    private void RefreshUI()
     {
-        attackButton.interactable = isActive;
-        heavyAttackButton.interactable = isActive;
-        defendButton.interactable = isActive;
-        poisonButton.interactable = isActive;
-        burnButton.interactable = isActive;
-        endTurnButton.interactable = isActive;
-    }
+        UpdateHandUI();
 
-    private void RefreshActionButtons()
-    {
-        if (state != BattleState.PlayerTurn)
-        {
-            SetPlayerActionButtons(false);
-            return;
-        }
-
-        attackButton.interactable = HasEnoughEnergy(normalAttackCost);
-        heavyAttackButton.interactable = HasEnoughEnergy(heavyAttackCost);
-        defendButton.interactable = HasEnoughEnergy(defendCost);
-        poisonButton.interactable = HasEnoughEnergy(poisonCost);
-        burnButton.interactable = HasEnoughEnergy(burnCost);
-        endTurnButton.interactable = true;
+        if (endTurnButton != null)
+            endTurnButton.interactable = (state == BattleState.PlayerTurn);
 
         UpdateDebugUI();
     }
 
+    private void UpdateHandUI()
+    {
+        if (handButtons == null || handButtonTexts == null)
+            return;
+
+        for (int i = 0; i < handButtons.Length; i++)
+        {
+            if (i < hand.Count)
+            {
+                CardInstance card = hand[i];
+
+                handButtons[i].gameObject.SetActive(true);
+                handButtonTexts[i].text = $"{card.CardName} ({card.Cost})";
+
+                handButtons[i].onClick.RemoveAllListeners();
+                handButtons[i].onClick.AddListener(() => UseCard(card));
+
+                bool canUse =
+                    state == BattleState.PlayerTurn &&
+                    currentEnergy >= card.Cost;
+
+                handButtons[i].interactable = canUse;
+            }
+            else
+            {
+                handButtons[i].onClick.RemoveAllListeners();
+                handButtons[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
     private void UpdateDebugUI()
     {
-        int playerPoison = statusEffectController.GetStack(playerUnit, StatusEffectType.Poison);
-        int playerBurn = statusEffectController.GetStack(playerUnit, StatusEffectType.Burn);
+        int playerPoison = 0;
+        int playerBurn = 0;
+        int enemyPoison = 0;
+        int enemyBurn = 0;
 
-        int enemyPoison = statusEffectController.GetStack(enemyUnit, StatusEffectType.Poison);
-        int enemyBurn = statusEffectController.GetStack(enemyUnit, StatusEffectType.Burn);
+        if (statusEffectController != null && playerUnit != null && enemyUnit != null)
+        {
+            playerPoison = statusEffectController.GetStack(playerUnit, StatusEffectType.Poison);
+            playerBurn = statusEffectController.GetStack(playerUnit, StatusEffectType.Burn);
 
-        if (playerHpText != null)
+            enemyPoison = statusEffectController.GetStack(enemyUnit, StatusEffectType.Poison);
+            enemyBurn = statusEffectController.GetStack(enemyUnit, StatusEffectType.Burn);
+        }
+
+        if (playerHpText != null && playerUnit != null)
         {
             playerHpText.text =
                 $"Player HP: {playerUnit.currentHp}/{playerUnit.maxHp}  " +
@@ -322,7 +347,7 @@ public class BattleManager : MonoBehaviour
                 $"Burn: {playerBurn}";
         }
 
-        if (enemyHpText != null)
+        if (enemyHpText != null && enemyUnit != null)
         {
             enemyHpText.text =
                 $"Enemy HP: {enemyUnit.currentHp}/{enemyUnit.maxHp}  " +
