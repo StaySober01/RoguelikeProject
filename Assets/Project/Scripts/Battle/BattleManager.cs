@@ -22,10 +22,11 @@ public class BattleManager : MonoBehaviour
     public float actionDelay = 0.5f;
 
     [Header("Card System")]
-    public int drawCountPerTurn = 3;
+    public int drawCountPerTurn = 5;
     public int maxHandSize = 5;
     public List<CardInstance> drawPile = new List<CardInstance>();
     public List<CardInstance> hand = new List<CardInstance>();
+    public List<CardInstance> discardPile = new List<CardInstance>();
 
     [Header("UI - Hand")]
     public Button[] handButtons;
@@ -129,18 +130,34 @@ public class BattleManager : MonoBehaviour
     {
         drawPile = CardFactory.CreateStarterDeck();
         hand.Clear();
-        ShuffleDrawPile();
+        discardPile.Clear();
+        ShuffleCards(drawPile);
     }
 
-    private void ShuffleDrawPile()
+    private void ShuffleCards(List<CardInstance> cards)
     {
-        for (int i = 0; i < drawPile.Count; i++)
+        for (int i = 0; i < cards.Count; i++)
         {
-            CardInstance temp = drawPile[i];
-            int randomIndex = UnityEngine.Random.Range(i, drawPile.Count);
-            drawPile[i] = drawPile[randomIndex];
-            drawPile[randomIndex] = temp;
+            CardInstance temp = cards[i];
+            int randomIndex = UnityEngine.Random.Range(i, cards.Count);
+            cards[i] = cards[randomIndex];
+            cards[randomIndex] = temp;
         }
+    }
+
+    private void ReshuffleDiscardIntoDrawPile()
+    {
+        if (discardPile.Count == 0)
+        {
+            Debug.Log("No cards in discard pile to reshuffle.");
+            return;
+        }
+
+        Debug.Log("Reshuffling discard pile into draw pile.");
+
+        drawPile.AddRange(discardPile);
+        discardPile.Clear();
+        ShuffleCards(drawPile);
     }
 
     private void DrawCards(int amount)
@@ -155,7 +172,12 @@ public class BattleManager : MonoBehaviour
 
             if (drawPile.Count == 0)
             {
-                Debug.Log("Draw pile is empty.");
+                ReshuffleDiscardIntoDrawPile();
+            }
+
+            if (drawPile.Count == 0)
+            {
+                Debug.Log("No cards left to draw.");
                 break;
             }
 
@@ -171,7 +193,17 @@ public class BattleManager : MonoBehaviour
 
     private void DiscardHand()
     {
+        if (hand.Count == 0)
+        {
+            UpdateHandUI();
+            return;
+        }
+
+        Debug.Log($"Discarding {hand.Count} card(s) from hand.");
+
+        discardPile.AddRange(hand);
         hand.Clear();
+
         UpdateHandUI();
     }
 
@@ -203,6 +235,8 @@ public class BattleManager : MonoBehaviour
         ResolveCardEffect(card);
 
         hand.Remove(card);
+        discardPile.Add(card);
+
         UpdateHandUI();
         UpdateDebugUI();
 
@@ -360,7 +394,11 @@ public class BattleManager : MonoBehaviour
             energyText.text = $"Energy: {currentEnergy}/{maxEnergy}";
 
         if (stateText != null)
-            stateText.text = $"State: {state}";
+        {
+            stateText.text =
+                $"State: {state}\n" +
+                $"Draw: {drawPile.Count}  Hand: {hand.Count}  Discard: {discardPile.Count}";
+        }
     }
 
     #endregion
