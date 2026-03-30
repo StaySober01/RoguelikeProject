@@ -232,13 +232,13 @@ public class BattleManager : MonoBehaviour
         currentEnergy -= card.Cost;
         Debug.Log($"Player uses {card.CardName} (Cost: {card.Cost}, Energy: {currentEnergy}/{maxEnergy})");
 
-        ResolveCardEffect(card);
-
         hand.Remove(card);
         discardPile.Add(card);
 
         UpdateHandUI();
         UpdateDebugUI();
+
+        ResolveCardEffect(card);
 
         yield return new WaitForSeconds(actionDelay);
 
@@ -252,30 +252,54 @@ public class BattleManager : MonoBehaviour
 
     private void ResolveCardEffect(CardInstance card)
     {
-        switch (card.EffectType)
+        foreach (CardEffectData effect in card.Effects)
         {
-            case CardEffectType.DealDamage:
-                enemyUnit.TakeDamage(card.Amount);
-                Debug.Log($"{card.CardName} deals {card.Amount} damage.");
-                break;
+            switch (effect.effectType)
+            {
+                case CardEffectType.DealDamage:
+                    enemyUnit.TakeDamage(effect.amount);
+                    Debug.Log($"{card.CardName}: Deal {effect.amount} damage.");
+                    break;
 
-            case CardEffectType.GainBlock:
-                playerUnit.AddBlock(card.Amount);
-                Debug.Log($"{card.CardName} grants {card.Amount} Block.");
-                break;
+                case CardEffectType.GainBlock:
+                    playerUnit.AddBlock(effect.amount);
+                    Debug.Log($"{card.CardName}: Gain {effect.amount} Block.");
+                    break;
 
-            case CardEffectType.ApplyPoison:
-                statusEffectController.ApplyPoison(enemyUnit, card.Amount);
-                Debug.Log($"{card.CardName} applies {card.Amount} Poison.");
-                break;
+                case CardEffectType.ApplyPoison:
+                    statusEffectController.ApplyPoison(enemyUnit, effect.amount);
+                    Debug.Log($"{card.CardName}: Apply {effect.amount} Poison.");
+                    break;
 
-            case CardEffectType.ApplyBurn:
-                statusEffectController.ApplyBurn(enemyUnit, card.Amount);
-                Debug.Log($"{card.CardName} applies {card.Amount} Burn.");
-                break;
+                case CardEffectType.ApplyBurn:
+                    statusEffectController.ApplyBurn(enemyUnit, effect.amount);
+                    Debug.Log($"{card.CardName}: Apply {effect.amount} Burn.");
+                    break;
 
-            default:
-                Debug.LogWarning($"Unhandled card effect: {card.EffectType}");
+                case CardEffectType.DrawCards:
+                    DrawCards(effect.amount);
+                    Debug.Log($"{card.CardName}: Draw {effect.amount} card(s).");
+                    break;
+
+                default:
+                    Debug.LogWarning($"Unhandled card effect: {effect.effectType}");
+                    break;
+            }
+        }
+
+        ResolveSpecialCardLogic(card);
+    }
+
+    private void ResolveSpecialCardLogic(CardInstance card)
+    {
+        switch (card.CardId)
+        {
+            case "venom_guard":
+                if (statusEffectController.HasStatus(enemyUnit, StatusEffectType.Poison))
+                {
+                    playerUnit.AddBlock(4);
+                    Debug.Log($"{card.CardName}: Target was Poisoned, gain 4 Block.");
+                }
                 break;
         }
     }

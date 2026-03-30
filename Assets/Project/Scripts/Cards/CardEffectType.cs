@@ -3,5 +3,6 @@ public enum CardEffectType
     DealDamage,
     GainBlock,
     ApplyPoison,
-    ApplyBurn
+    ApplyBurn,
+    DrawCards
 }
