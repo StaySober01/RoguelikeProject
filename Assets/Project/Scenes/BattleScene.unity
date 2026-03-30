@@ -1142,7 +1142,7 @@ MonoBehaviour:
   unitName: sukyeom
   maxHp: 25
   currentHp: 25
-  attackPower: 7
+  attackPower: 1
   currentBlock: 0
 --- !u!1 &430475659
 GameObject:
@@ -2334,8 +2334,8 @@ MonoBehaviour:
   hand: []
   discardPile: []
   handButtons:
-  - {fileID: 573521844}
   - {fileID: 257365942}
+  - {fileID: 573521844}
   - {fileID: 15218010}
   - {fileID: 1431770971}
   - {fileID: 331611652}
@@ -2381,6 +2381,7 @@ MonoBehaviour:
   burnExplosionThreshold: 3
   poisonDamagePerStack: 1
   burnExplosionDamage: 8
+  burnExplosionDamageMultiplier: 1
   bonusPoisonOnApply: 1
   reapplyBurnAfterExplosion: 1
 --- !u!1 &1324533168
@@ -2886,6 +2887,7 @@ MonoBehaviour:
   burnExplosionThreshold: 3
   poisonDamagePerStack: 1
   burnExplosionDamage: 8
+  burnExplosionDamageMultiplier: 1
   bonusPoisonOnApply: 1
   reapplyBurnAfterExplosion: 1
 --- !u!1660057539 &9223372036854775807

@@ -6,6 +6,7 @@ public class StatusEffectController : MonoBehaviour
     public int burnExplosionThreshold = 3;
     public int poisonDamagePerStack = 1;
     public int burnExplosionDamage = 8;
+    public int burnExplosionDamageMultiplier = 1;
 
     [Header("Passive Toggles")]
     public bool bonusPoisonOnApply = true;
@@ -24,7 +25,7 @@ public class StatusEffectController : MonoBehaviour
         Debug.Log($"{target.unitName} gains {amount} Poison. Current Poison: {GetStack(target, StatusEffectType.Poison)}");
     }
 
-    public void ApplyBurn(Unit target, int amount)
+    public bool ApplyBurn(Unit target, int amount)
     {
         target.statusData.AddStack(StatusEffectType.Burn, amount);
         Debug.Log($"{target.unitName} gains {amount} Burn. Current Burn: {GetStack(target, StatusEffectType.Burn)}");
@@ -33,13 +34,15 @@ public class StatusEffectController : MonoBehaviour
         {
             Debug.Log("Synergy triggered: Burn applied to poisoned target -> immediate explosion");
             TriggerBurnExplosion(target);
-            return;
+            return true;
         }
 
         if (GetStack(target, StatusEffectType.Burn) >= burnExplosionThreshold)
         {
             TriggerBurnExplosion(target);
+            return true;
         }
+        return false;
     }
 
     public void ProcessTurnEnd(Unit target)
@@ -61,7 +64,7 @@ public class StatusEffectController : MonoBehaviour
     private void TriggerBurnExplosion(Unit target)
     {
         Debug.Log($"{target.unitName}'s Burn explodes!");
-        target.TakeDamage(burnExplosionDamage);
+        target.TakeDamage(burnExplosionDamage * burnExplosionDamageMultiplier);
         target.statusData.Clear(StatusEffectType.Burn);
 
         if (target.statusData.Has(StatusEffectType.Poison))

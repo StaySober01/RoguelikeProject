@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System;
 
 [Serializable]
 public class CardData
@@ -10,6 +10,7 @@ public class CardData
     public int cost;
     public string description;
     public List<CardEffectData> effects;
+    public List<CardTag> tags;
 
     public CardData(
         string cardId,
@@ -17,7 +18,8 @@ public class CardData
         CardCategory category,
         int cost,
         string description,
-        List<CardEffectData> effects)
+        List<CardEffectData> effects,
+        List<CardTag> tags = null)
     {
         this.cardId = cardId;
         this.cardName = cardName;
@@ -25,5 +27,6 @@ public class CardData
         this.cost = cost;
         this.description = description;
         this.effects = effects;
+        this.tags = tags ?? new List<CardTag>();
     }
 }

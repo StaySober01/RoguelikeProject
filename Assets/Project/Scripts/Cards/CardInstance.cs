@@ -17,4 +17,5 @@ public class CardInstance
     public int Cost => data.cost;
     public string Description => data.description;
     public List<CardEffectData> Effects => data.effects;
+    public List<CardTag> Tags => data.tags;
 }

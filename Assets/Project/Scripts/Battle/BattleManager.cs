@@ -44,6 +44,8 @@ public class BattleManager : MonoBehaviour
     [Header("Controllers")]
     public StatusEffectController statusEffectController;
 
+    private bool doubleExplosionDamageThisTurn = false;
+
     private void Start()
     {
         StartBattle();
@@ -62,6 +64,8 @@ public class BattleManager : MonoBehaviour
     {
         playerUnit.ResetBlock();
         currentEnergy = maxEnergy;
+        doubleExplosionDamageThisTurn = false;
+        statusEffectController.burnExplosionDamageMultiplier = 1;
         SetState(BattleState.PlayerTurn);
 
         DiscardHand();
@@ -301,7 +305,82 @@ public class BattleManager : MonoBehaviour
                     Debug.Log($"{card.CardName}: Target was Poisoned, gain 4 Block.");
                 }
                 break;
+
+            case "toxic_ignition":
+                if (statusEffectController.HasStatus(enemyUnit, StatusEffectType.Poison))
+                {
+                    AddRandomCardWithTagFromDrawPileToHand(CardTag.Burn);
+                    Debug.Log($"{card.CardName}: Target was Poisoned, fetched a Burn-related card.");
+                }
+                break;
+
+            case "afterflare":
+                bool exploded = statusEffectController.ApplyBurn(enemyUnit, 1);
+                if (exploded)
+                {
+                    statusEffectController.ApplyPoison(enemyUnit, 1);
+                    Debug.Log("Afterflare: Explosion occurred, apply 1 Poison.");
+                }
+                break;
+
+            case "empty_arsenal":
+                bool hasAttackCard = hand.Exists(c => c.Category == CardCategory.Attack);
+
+                if (!hasAttackCard)
+                {
+                    DrawCards(2);
+                    Debug.Log("Empty Arsenal: No Attack cards in hand, draw 2.");
+                }
+                else
+                {
+                    Debug.Log("Empty Arsenal: Attack card exists in hand.");
+                }
+                break;
+
+            case "heat_charge":
+                if (statusEffectController.HasStatus(enemyUnit, StatusEffectType.Burn))
+                {
+                    currentEnergy += 1;
+                    Debug.Log("Heat Charge: Enemy has Burn, gain 1 Energy.");
+                }
+                else
+                {
+                    Debug.Log("Heat Charge: Enemy does not have Burn.");
+                }
+                break;
+
+            case "overclocked_flames":
+                doubleExplosionDamageThisTurn = true;
+                statusEffectController.burnExplosionDamageMultiplier = 2;
+                Debug.Log("Overclocked Flames: Explosion damage is doubled this turn.");
+                break;
         }
+    }
+
+    private void AddRandomCardWithTagFromDrawPileToHand(CardTag tag)
+    {
+        List<CardInstance> candidates = drawPile.FindAll(card => card.Tags.Contains(tag));
+
+        if (candidates.Count == 0)
+        {
+            Debug.Log($"No {tag} cards found in draw pile.");
+            return;
+        }
+
+        if (hand.Count >= maxHandSize)
+        {
+            Debug.Log("Hand is full. Cannot add searched card.");
+            return;
+        }
+
+        CardInstance selectedCard = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+
+        drawPile.Remove(selectedCard);
+        hand.Add(selectedCard);
+
+        Debug.Log($"Added {selectedCard.CardName} from draw pile to hand.");
+        UpdateHandUI();
+        UpdateDebugUI();
     }
 
     #endregion
