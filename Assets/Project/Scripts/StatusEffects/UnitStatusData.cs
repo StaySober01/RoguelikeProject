@@ -38,4 +38,9 @@ public class UnitStatusData
     {
         stacks.Remove(type);
     }
+
+    public void ClearAll()
+    {
+        stacks.Clear();
+    }
 }

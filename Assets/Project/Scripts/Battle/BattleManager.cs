@@ -27,6 +27,8 @@ public class BattleManager : MonoBehaviour
     public List<CardInstance> drawPile = new List<CardInstance>();
     public List<CardInstance> hand = new List<CardInstance>();
     public List<CardInstance> discardPile = new List<CardInstance>();
+    public List<CardInstance> deck = new List<CardInstance>();
+    private List<CardInstance> rewardChoices = new List<CardInstance>();
 
     [Header("UI - Hand")]
     public Button[] handButtons;
@@ -34,6 +36,11 @@ public class BattleManager : MonoBehaviour
 
     [Header("UI - Turn")]
     public Button endTurnButton;
+
+    [Header("UI - Reward")]
+    public GameObject rewardPanel;
+    public Button[] rewardButtons;
+    public TextMeshProUGUI[] rewardButtonTexts;
 
     [Header("Debug UI")]
     public TextMeshProUGUI playerHpText;
@@ -64,6 +71,7 @@ public class BattleManager : MonoBehaviour
 
     private void Start()
     {
+        InitializePermanentDeck();
         StartBattle();
     }
 
@@ -71,10 +79,10 @@ public class BattleManager : MonoBehaviour
 
     public void StartBattle()
     {
-        InitializeDeck();
+        InitializeBattleDeck();
         Debug.Log("Battle Start");
-        playerUnit.activePassives.Add(PassiveType.BonusPoisonOnApply);
-        playerUnit.activePassives.Add(PassiveType.ReapplyBurnAfterExplosion);
+        //playerUnit.activePassives.Add(PassiveType.BonusPoisonOnApply);
+        //playerUnit.activePassives.Add(PassiveType.ReapplyBurnAfterExplosion);
         StartPlayerTurn();
     }
 
@@ -110,6 +118,40 @@ public class BattleManager : MonoBehaviour
         Debug.Log("Player ends turn");
         RefreshUI();
         StartEnemyTurn();
+    }
+
+    private void GenerateCardRewards()
+    {
+        rewardChoices.Clear();
+        rewardChoices.Add(CardFactory.CreateToxicBurst());
+        rewardChoices.Add(CardFactory.CreateToxicStacking());
+        rewardChoices.Add(CardFactory.CreateFlameAccelerate());
+    }
+
+    public void SelectRewardCard(CardInstance card)
+    {
+        deck.Add(card);
+        Debug.Log($"{card.CardName} added to permanent deck.");
+
+        HideRewardUI();
+        StartNextBattle();
+    }
+
+    private void StartNextBattle()
+    {
+        ResetUnitsForNextBattle();
+        StartBattle();
+    }
+
+    private void ResetUnitsForNextBattle()
+    {
+        playerUnit.currentBlock = 0;
+        enemyUnit.currentBlock = 0;
+
+        playerUnit.ClearStatusData();
+        enemyUnit.ClearStatusData();
+
+        enemyUnit.currentHp = enemyUnit.maxHp;
     }
 
     #endregion
@@ -148,9 +190,14 @@ public class BattleManager : MonoBehaviour
 
     #region Card System
 
-    private void InitializeDeck()
+    private void InitializePermanentDeck()
     {
-        drawPile = CardFactory.CreateStarterDeck();
+        deck = CardFactory.CreateStarterDeck();
+    }
+
+    private void InitializeBattleDeck()
+    {
+        drawPile = new List<CardInstance>(deck);
         hand.Clear();
         discardPile.Clear();
         ShuffleCards(drawPile);
@@ -332,6 +379,8 @@ public class BattleManager : MonoBehaviour
         {
             SetState(BattleState.Win);
             Debug.Log("Player Wins!");
+            GenerateCardRewards();
+            ShowRewardUI();
             RefreshUI();
             return true;
         }
@@ -389,6 +438,50 @@ public class BattleManager : MonoBehaviour
                 handButtons[i].onClick.RemoveAllListeners();
                 handButtons[i].gameObject.SetActive(false);
             }
+        }
+    }
+
+    private void ShowRewardUI()
+    {
+        if (rewardPanel != null)
+            rewardPanel.SetActive(true);
+
+        if (rewardButtons == null || rewardButtonTexts == null)
+            return;
+
+        for (int i = 0; i < rewardButtons.Length; i++)
+        {
+            if (i < rewardChoices.Count)
+            {
+                CardInstance card = rewardChoices[i];
+
+                rewardButtons[i].gameObject.SetActive(true);
+                rewardButtonTexts[i].text = $"{card.CardName} ({card.Cost})";
+
+                rewardButtons[i].onClick.RemoveAllListeners();
+                rewardButtons[i].onClick.AddListener(() => SelectRewardCard(card));
+            }
+            else
+            {
+                rewardButtons[i].onClick.RemoveAllListeners();
+                rewardButtons[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private void HideRewardUI()
+    {
+        rewardChoices.Clear();
+
+        if (rewardPanel != null)
+            rewardPanel.SetActive(false);
+
+        if (rewardButtons == null)
+            return;
+
+        for (int i = 0; i < rewardButtons.Length; i++)
+        {
+            rewardButtons[i].onClick.RemoveAllListeners();
         }
     }
 

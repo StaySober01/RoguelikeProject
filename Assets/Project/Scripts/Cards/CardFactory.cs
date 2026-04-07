@@ -313,12 +313,15 @@ public static class CardFactory
     {
         return new List<CardInstance>
         {
-            //CreateAttack(),
-            //CreateAttack(),
-            //CreateDefend(),
-            //CreateHeavyAttack(),
-            CreatePoison(),
-            CreateBurn(),
+            CreateAttack(),
+            CreateAttack(),
+            CreateAttack(),
+            CreateDefend(),
+            CreateDefend(),
+            CreateDefend(),
+            CreateHeavyAttack(),
+            //CreatePoison(),
+            //CreateBurn(),
             //CreateQuickStrike(),
             //CreateToxicStrike(),
             //CreateVenomGuard(),
@@ -328,9 +331,9 @@ public static class CardFactory
             //CreateToxicEmber(),
             //CreateHeatCharge(),
             //CreateOverclockedFlames()
-            CreateToxicBurst(),
-            CreateFlameAccelerate(),
-            CreateToxicStacking()
+            //CreateToxicBurst(),
+            //CreateFlameAccelerate(),
+            //CreateToxicStacking()
         };
     }
 }

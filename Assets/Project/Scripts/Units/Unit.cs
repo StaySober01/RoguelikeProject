@@ -61,4 +61,9 @@ public class Unit : MonoBehaviour
     {
         return currentHp <= 0;
     }
+
+    public void ClearStatusData()
+    {
+        statusData.ClearAll();
+    }
 }
