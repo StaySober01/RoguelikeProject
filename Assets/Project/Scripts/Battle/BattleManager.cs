@@ -46,6 +46,8 @@ public class BattleManager : MonoBehaviour
 
     private bool doubleExplosionDamageThisTurn = false;
 
+    private CardEffectResolver cardEffectResolver = new CardEffectResolver();
+
     public static BattleManager Instance { get; private set; }
 
     private void Awake()
@@ -180,7 +182,7 @@ public class BattleManager : MonoBehaviour
         ShuffleCards(drawPile);
     }
 
-    private void DrawCards(int amount)
+    public void DrawCards(int amount)
     {
         for (int i = 0; i < amount; i++)
         {
@@ -258,7 +260,7 @@ public class BattleManager : MonoBehaviour
         UpdateHandUI();
         UpdateDebugUI();
 
-        ResolveCardEffect(card);
+        cardEffectResolver.Resolve(this, card);
 
         yield return new WaitForSeconds(actionDelay);
 
@@ -270,110 +272,7 @@ public class BattleManager : MonoBehaviour
         RefreshUI();
     }
 
-    private void ResolveCardEffect(CardInstance card)
-    {
-        foreach (CardEffectData effect in card.Effects)
-        {
-            switch (effect.effectType)
-            {
-                case CardEffectType.DealDamage:
-                    enemyUnit.TakeDamage(effect.amount);
-                    Debug.Log($"{card.CardName}: Deal {effect.amount} damage.");
-                    break;
-
-                case CardEffectType.GainBlock:
-                    playerUnit.AddBlock(effect.amount);
-                    Debug.Log($"{card.CardName}: Gain {effect.amount} Block.");
-                    break;
-
-                case CardEffectType.ApplyPoison:
-                    statusEffectController.ApplyPoison(enemyUnit, effect.amount);
-                    Debug.Log($"{card.CardName}: Apply {effect.amount} Poison.");
-                    break;
-
-                case CardEffectType.ApplyBurn:
-                    statusEffectController.ApplyBurn(enemyUnit, effect.amount);
-                    Debug.Log($"{card.CardName}: Apply {effect.amount} Burn.");
-                    break;
-
-                case CardEffectType.DrawCards:
-                    DrawCards(effect.amount);
-                    Debug.Log($"{card.CardName}: Draw {effect.amount} card(s).");
-                    break;
-
-                default:
-                    Debug.LogWarning($"Unhandled card effect: {effect.effectType}");
-                    break;
-            }
-        }
-
-        ResolveSpecialCardLogic(card);
-    }
-
-    private void ResolveSpecialCardLogic(CardInstance card)
-    {
-        switch (card.CardId)
-        {
-            case "venom_guard":
-                if (statusEffectController.HasStatus(enemyUnit, StatusEffectType.Poison))
-                {
-                    playerUnit.AddBlock(4);
-                    Debug.Log($"{card.CardName}: Target was Poisoned, gain 4 Block.");
-                }
-                break;
-
-            case "toxic_ignition":
-                if (statusEffectController.HasStatus(enemyUnit, StatusEffectType.Poison))
-                {
-                    AddRandomCardWithTagFromDrawPileToHand(CardTag.Burn);
-                    Debug.Log($"{card.CardName}: Target was Poisoned, fetched a Burn-related card.");
-                }
-                break;
-
-            case "afterflare":
-                bool exploded = statusEffectController.ApplyBurn(enemyUnit, 1);
-                if (exploded)
-                {
-                    statusEffectController.ApplyPoison(enemyUnit, 1);
-                    Debug.Log("Afterflare: Explosion occurred, apply 1 Poison.");
-                }
-                break;
-
-            case "empty_arsenal":
-                bool hasAttackCard = hand.Exists(c => c.Category == CardCategory.Attack);
-
-                if (!hasAttackCard)
-                {
-                    DrawCards(2);
-                    Debug.Log("Empty Arsenal: No Attack cards in hand, draw 2.");
-                }
-                else
-                {
-                    Debug.Log("Empty Arsenal: Attack card exists in hand.");
-                }
-                break;
-
-            case "heat_charge":
-                if (statusEffectController.HasStatus(enemyUnit, StatusEffectType.Burn))
-                {
-                    currentEnergy += 1;
-                    Debug.Log("Heat Charge: Enemy has Burn, gain 1 Energy.");
-                }
-                else
-                {
-                    Debug.Log("Heat Charge: Enemy does not have Burn.");
-                }
-                break;
-
-            case "overclocked_flames":
-                doubleExplosionDamageThisTurn = true;
-                statusEffectController.burnExplosionDamageMultiplier = 2;
-                Debug.Log("Overclocked Flames: Explosion damage is doubled this turn.");
-                break;
-        }
-    }
-
-    private void AddRandomCardWithTagFromDrawPileToHand(CardTag tag)
+    public void AddRandomCardWithTagFromDrawPileToHand(CardTag tag)
     {
         List<CardInstance> candidates = drawPile.FindAll(card => card.Tags.Contains(tag));
 
@@ -397,6 +296,19 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"Added {selectedCard.CardName} from draw pile to hand.");
         UpdateHandUI();
         UpdateDebugUI();
+    }
+
+    public void GainEnergy(int amount)
+    {
+        currentEnergy += amount;
+        UpdateDebugUI();
+        UpdateHandUI();
+    }
+
+    public void EnableDoubleExplosionDamageThisTurn()
+    {
+        doubleExplosionDamageThisTurn = true;
+        statusEffectController.burnExplosionDamageMultiplier = 2;
     }
 
     public bool HasPassive(PassiveType passiveType)
