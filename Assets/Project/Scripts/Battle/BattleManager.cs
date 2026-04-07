@@ -41,6 +41,7 @@ public class BattleManager : MonoBehaviour
     public GameObject rewardPanel;
     public Button[] rewardButtons;
     public TextMeshProUGUI[] rewardButtonTexts;
+    public Button skipRewardButton;
 
     [Header("Debug UI")]
     public TextMeshProUGUI playerHpText;
@@ -123,15 +124,31 @@ public class BattleManager : MonoBehaviour
     private void GenerateCardRewards()
     {
         rewardChoices.Clear();
-        rewardChoices.Add(CardFactory.CreateToxicBurst());
-        rewardChoices.Add(CardFactory.CreateToxicStacking());
-        rewardChoices.Add(CardFactory.CreateFlameAccelerate());
+
+        List<CardInstance> rewardPool = CardFactory.CreateRewardCardPool();
+
+        ShuffleCards(rewardPool);
+
+        int rewardCount = Mathf.Min(3, rewardPool.Count);
+
+        for (int i = 0; i < rewardCount; i++)
+        {
+            rewardChoices.Add(rewardPool[i]);
+        }
     }
 
     public void SelectRewardCard(CardInstance card)
     {
         deck.Add(card);
         Debug.Log($"{card.CardName} added to permanent deck.");
+
+        HideRewardUI();
+        StartNextBattle();
+    }
+
+    public void SkipReward()
+    {
+        Debug.Log("Player skipped card reward.");
 
         HideRewardUI();
         StartNextBattle();
@@ -467,6 +484,13 @@ public class BattleManager : MonoBehaviour
                 rewardButtons[i].gameObject.SetActive(false);
             }
         }
+
+        if (skipRewardButton != null)
+        {
+            skipRewardButton.gameObject.SetActive(true);
+            skipRewardButton.onClick.RemoveAllListeners();
+            skipRewardButton.onClick.AddListener(SkipReward);
+        }
     }
 
     private void HideRewardUI()
@@ -476,12 +500,18 @@ public class BattleManager : MonoBehaviour
         if (rewardPanel != null)
             rewardPanel.SetActive(false);
 
-        if (rewardButtons == null)
-            return;
-
-        for (int i = 0; i < rewardButtons.Length; i++)
+        if (rewardButtons != null)
         {
-            rewardButtons[i].onClick.RemoveAllListeners();
+            for (int i = 0; i < rewardButtons.Length; i++)
+            {
+                rewardButtons[i].onClick.RemoveAllListeners();
+            }
+        }
+
+        if (skipRewardButton != null)
+        {
+            skipRewardButton.onClick.RemoveAllListeners();
+            skipRewardButton.gameObject.SetActive(false);
         }
     }
 

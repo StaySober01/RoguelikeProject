@@ -320,20 +320,26 @@ public static class CardFactory
             CreateDefend(),
             CreateDefend(),
             CreateHeavyAttack(),
-            //CreatePoison(),
-            //CreateBurn(),
-            //CreateQuickStrike(),
-            //CreateToxicStrike(),
-            //CreateVenomGuard(),
+        };
+    }
 
-            //CreateAfterflare(),
-            //CreateEmptyArsenal(),
-            //CreateToxicEmber(),
-            //CreateHeatCharge(),
-            //CreateOverclockedFlames()
-            //CreateToxicBurst(),
-            //CreateFlameAccelerate(),
-            //CreateToxicStacking()
+    public static List<CardInstance> CreateRewardCardPool()
+    {
+        return new List<CardInstance>
+        {
+            CreatePoison(),
+            CreateBurn(),
+            CreateQuickStrike(),
+            CreateToxicStrike(),
+            CreateVenomGuard(),
+            CreateAfterflare(),
+            CreateEmptyArsenal(),
+            CreateToxicEmber(),
+            CreateHeatCharge(),
+            CreateOverclockedFlames(),
+            CreateToxicBurst(),
+            CreateFlameAccelerate(),
+            CreateToxicStacking()
         };
     }
 }
