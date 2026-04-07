@@ -67,10 +67,10 @@ public static class CardFactory
                 "Poison",
                 CardCategory.Status,
                 1,
-                "Apply 5 Poison.",
+                "Apply 2 Poison.",
                 new List<CardEffectData>
                 {
-                    new CardEffectData(CardEffectType.ApplyPoison, 5)
+                    new CardEffectData(CardEffectType.ApplyPoison, 2)
                 },
                 new List<CardTag>
                 {
@@ -126,11 +126,11 @@ public static class CardFactory
                 "Toxic Strike",
                 CardCategory.Attack,
                 1,
-                "Deal 3 damage. Apply 3 Poison.",
+                "Deal 3 damage. Apply 1 Poison.",
                 new List<CardEffectData>
                 {
                     new CardEffectData(CardEffectType.DealDamage, 3),
-                    new CardEffectData(CardEffectType.ApplyPoison, 3)
+                    new CardEffectData(CardEffectType.ApplyPoison, 1)
                 },
                 new List<CardTag>
                 {
@@ -147,10 +147,10 @@ public static class CardFactory
                 "Venom Guard",
                 CardCategory.Attack,
                 1,
-                "Deal 4 damage. If target is Poisoned, gain 4 Block.",
+                "Deal 3 damage. If target is Poisoned, gain 4 Block.",
                 new List<CardEffectData>
                 {
-                    new CardEffectData(CardEffectType.DealDamage, 4)
+                    new CardEffectData(CardEffectType.DealDamage, 3)
                 },
                 new List<CardTag>
                 {
@@ -262,6 +262,53 @@ public static class CardFactory
                 }));
     }
 
+    public static CardInstance CreateToxicBurst()
+    {
+        return new CardInstance(
+            new CardData(
+                "toxic_burst",
+                "Toxic Burst",
+                CardCategory.Attack,
+                2,
+                "If target is poisoned, deal twice the amount of poison.",
+                new List<CardEffectData>(),
+                new List<CardTag> {
+                    CardTag.Poison,
+                    CardTag.Damage
+                }));
+    }
+
+    public static CardInstance CreateToxicStacking()
+    {
+        return new CardInstance(
+            new CardData(
+                "toxic_stacking",
+                "Toxic Stacking",
+                CardCategory.Skill,
+                1,
+                "Apply 1 Poison. If target is already poisoned, apply 2 additional Poison.",
+                new List<CardEffectData>(),
+                new List<CardTag> {
+                CardTag.Poison
+                }));
+    }
+
+    public static CardInstance CreateFlameAccelerate()
+    {
+        return new CardInstance(
+            new CardData(
+                "flame_accelerate",
+                "Flame Accelerate",
+                CardCategory.Skill,
+                1,
+                "Draw cards equal to the target's Burn stacks.",
+                new List<CardEffectData>(),
+                new List<CardTag> {
+                CardTag.Burn,
+                CardTag.Draw
+                }));
+    }
+
     public static List<CardInstance> CreateStarterDeck()
     {
         return new List<CardInstance>
@@ -276,11 +323,14 @@ public static class CardFactory
             //CreateToxicStrike(),
             //CreateVenomGuard(),
 
-            CreateAfterflare(),
-            CreateEmptyArsenal(),
-            CreateToxicEmber(),
+            //CreateAfterflare(),
+            //CreateEmptyArsenal(),
+            //CreateToxicEmber(),
             //CreateHeatCharge(),
             //CreateOverclockedFlames()
+            CreateToxicBurst(),
+            CreateFlameAccelerate(),
+            CreateToxicStacking()
         };
     }
 }

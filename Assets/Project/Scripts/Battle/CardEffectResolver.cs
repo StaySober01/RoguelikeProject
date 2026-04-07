@@ -103,6 +103,36 @@ public class CardEffectResolver
                 battleManager.EnableDoubleExplosionDamageThisTurn();
                 Debug.Log("Overclocked Flames: Explosion damage is doubled this turn.");
                 break;
+
+            case "toxic_burst":
+                int poison = battleManager.statusEffectController.GetStack(
+                    battleManager.enemyUnit, StatusEffectType.Poison);
+                battleManager.enemyUnit.TakeDamage(poison * 2);
+                Debug.Log("Toxic Burst: Enemy takes twice the amount of poison.");
+                break;
+
+            case "toxic_stacking":
+                bool wasPoisoned = battleManager.statusEffectController.HasStatus(
+                    battleManager.enemyUnit, StatusEffectType.Poison);
+
+                battleManager.statusEffectController.ApplyPoison(
+                    battleManager.enemyUnit, 1);
+
+                if (wasPoisoned)
+                {
+                    battleManager.statusEffectController.ApplyPoison(
+                        battleManager.enemyUnit, 2);
+                }
+
+                Debug.Log("Toxic Stacking: Apply 1 Poison. If target was already poisoned, apply 2 additional Poison.");
+                break;
+
+            case "flame_accelerate":
+                int burn = battleManager.statusEffectController.GetStack(
+                    battleManager.enemyUnit, StatusEffectType.Burn);
+                battleManager.DrawCards(burn);
+                Debug.Log("Flame Eccelerate: Draw cards equal to the target's Burn stacks.");
+                break;
         }
     }
 }
