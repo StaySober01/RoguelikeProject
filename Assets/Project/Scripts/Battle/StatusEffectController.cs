@@ -8,16 +8,18 @@ public class StatusEffectController : MonoBehaviour
     public int burnExplosionDamage = 8;
     public int burnExplosionDamageMultiplier = 1;
 
-    [Header("Passive Toggles")]
-    public bool bonusPoisonOnApply = true;
-    public bool reapplyBurnAfterExplosion = true;
+    private BattleManager battleManager;
+
+    private void Awake()
+    {
+        battleManager = BattleManager.Instance;
+    }
 
     public void ApplyPoison(Unit target, int amount)
     {
-        if (bonusPoisonOnApply)
+        if (battleManager.HasPassive(PassiveType.BonusPoisonOnApply))
         {
             amount += 1;
-            Debug.Log("Passive triggered: Poison application +1");
         }
 
         target.statusData.AddStack(StatusEffectType.Poison, amount);
@@ -73,7 +75,7 @@ public class StatusEffectController : MonoBehaviour
             target.statusData.Clear(StatusEffectType.Poison);
         }
 
-        if (reapplyBurnAfterExplosion)
+        if (battleManager.HasPassive(PassiveType.ReapplyBurnAfterExplosion))
         {
             Debug.Log("Passive triggered: Reapply Burn 1 after explosion");
             target.statusData.AddStack(StatusEffectType.Burn, 1);

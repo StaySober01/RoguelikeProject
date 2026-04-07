@@ -46,6 +46,20 @@ public class BattleManager : MonoBehaviour
 
     private bool doubleExplosionDamageThisTurn = false;
 
+    public static BattleManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("Duplicate BattleManager detected. Destroying this instance.");
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
     private void Start()
     {
         StartBattle();
@@ -57,6 +71,8 @@ public class BattleManager : MonoBehaviour
     {
         InitializeDeck();
         Debug.Log("Battle Start");
+        playerUnit.activePassives.Add(PassiveType.BonusPoisonOnApply);
+        playerUnit.activePassives.Add(PassiveType.ReapplyBurnAfterExplosion);
         StartPlayerTurn();
     }
 
@@ -381,6 +397,11 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"Added {selectedCard.CardName} from draw pile to hand.");
         UpdateHandUI();
         UpdateDebugUI();
+    }
+
+    public bool HasPassive(PassiveType passiveType)
+    {
+        return playerUnit.activePassives.Contains(passiveType);
     }
 
     #endregion

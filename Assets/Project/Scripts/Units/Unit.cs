@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Unit : MonoBehaviour
@@ -9,6 +10,8 @@ public class Unit : MonoBehaviour
     public int currentBlock = 0;
 
     public UnitStatusData statusData = new();
+
+    public List<PassiveType> activePassives = new();
 
     private void Awake()
     {
