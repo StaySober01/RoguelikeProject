@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +6,14 @@ using TMPro;
 
 public class BattleManager : MonoBehaviour
 {
+    #region Singleton
+
+    public static BattleManager Instance { get; private set; }
+
+    #endregion
+
+    #region Fields
+
     public BattleState state;
 
     [Header("Units")]
@@ -24,11 +31,11 @@ public class BattleManager : MonoBehaviour
     [Header("Card System")]
     public int drawCountPerTurn = 5;
     public int maxHandSize = 5;
-    public List<CardInstance> drawPile = new List<CardInstance>();
-    public List<CardInstance> hand = new List<CardInstance>();
-    public List<CardInstance> discardPile = new List<CardInstance>();
-    public List<CardInstance> deck = new List<CardInstance>();
-    private List<CardInstance> rewardChoices = new List<CardInstance>();
+    public List<CardInstance> drawPile = new();
+    public List<CardInstance> hand = new();
+    public List<CardInstance> discardPile = new();
+    public List<CardInstance> deck = new();
+    private List<CardInstance> rewardChoices = new();
 
     [Header("UI - Hand")]
     public Button[] handButtons;
@@ -58,10 +65,11 @@ public class BattleManager : MonoBehaviour
     public StatusEffectController statusEffectController;
 
     private bool doubleExplosionDamageThisTurn = false;
+    private CardEffectResolver cardEffectResolver = new();
 
-    private CardEffectResolver cardEffectResolver = new CardEffectResolver();
+    #endregion
 
-    public static BattleManager Instance { get; private set; }
+    #region Unity Lifecycle
 
     private void Awake()
     {
@@ -81,6 +89,10 @@ public class BattleManager : MonoBehaviour
         ShowStartPassiveSelection();
     }
 
+    #endregion
+
+    #region Start Passive Selection
+
     private void ShowStartPassiveSelection()
     {
         if (chooseStartPassivePanel != null)
@@ -89,10 +101,10 @@ public class BattleManager : MonoBehaviour
         if (startPassiveButtons == null || startPassiveButtonTexts == null)
             return;
 
-        StartPassiveType[] choices = new StartPassiveType[]
+        StartPassiveType[] choices =
         {
-        StartPassiveType.PoisonCore,
-        StartPassiveType.BurnCore
+            StartPassiveType.PoisonCore,
+            StartPassiveType.BurnCore
         };
 
         for (int i = 0; i < startPassiveButtons.Length; i++)
@@ -100,7 +112,6 @@ public class BattleManager : MonoBehaviour
             if (i < choices.Length)
             {
                 StartPassiveType passive = choices[i];
-
                 startPassiveButtons[i].gameObject.SetActive(true);
                 startPassiveButtonTexts[i].text = passive.ToString();
 
@@ -126,14 +137,19 @@ public class BattleManager : MonoBehaviour
         StartBattle();
     }
 
+    public bool HasStartPassive(StartPassiveType startPassiveType)
+    {
+        return playerUnit.selectedStartPassive == startPassiveType;
+    }
+
+    #endregion
+
     #region Battle Flow
 
     public void StartBattle()
     {
         InitializeBattleDeck();
         Debug.Log("Battle Start");
-        //playerUnit.activePassives.Add(PassiveType.BonusPoisonOnApply);
-        //playerUnit.activePassives.Add(PassiveType.ReapplyBurnAfterExplosion);
         StartPlayerTurn();
     }
 
@@ -143,6 +159,7 @@ public class BattleManager : MonoBehaviour
         currentEnergy = maxEnergy;
         doubleExplosionDamageThisTurn = false;
         statusEffectController.burnExplosionDamageMultiplier = 1;
+
         SetState(BattleState.PlayerTurn);
 
         DiscardHand();
@@ -171,12 +188,76 @@ public class BattleManager : MonoBehaviour
         StartEnemyTurn();
     }
 
+    private bool CheckBattleEnd()
+    {
+        if (enemyUnit.IsDead())
+        {
+            SetState(BattleState.Win);
+            Debug.Log("Player Wins!");
+            GenerateCardRewards();
+            ShowRewardUI();
+            RefreshUI();
+            return true;
+        }
+
+        if (playerUnit.IsDead())
+        {
+            SetState(BattleState.Lose);
+            Debug.Log("Player Loses...");
+            RefreshUI();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void SetState(BattleState newState)
+    {
+        state = newState;
+        UpdateDebugUI();
+    }
+
+    #endregion
+
+    #region Enemy Turn
+
+    private IEnumerator EnemyTurnRoutine()
+    {
+        SetState(BattleState.Busy);
+        RefreshUI();
+
+        yield return new WaitForSeconds(enemyAttackDelay);
+
+        Debug.Log($"{enemyUnit.unitName} attacks Player");
+        playerUnit.TakeDamage(enemyUnit.attackPower);
+        RefreshUI();
+
+        if (CheckBattleEnd())
+            yield break;
+
+        yield return new WaitForSeconds(actionDelay);
+
+        statusEffectController.ProcessTurnEnd(enemyUnit);
+        RefreshUI();
+
+        if (CheckBattleEnd())
+            yield break;
+
+        yield return new WaitForSeconds(actionDelay);
+
+        Debug.Log("Enemy Turn End");
+        StartPlayerTurn();
+    }
+
+    #endregion
+
+    #region Reward Flow
+
     private void GenerateCardRewards()
     {
         rewardChoices.Clear();
 
         List<CardInstance> rewardPool = CardFactory.CreateRewardCardPool();
-
         ShuffleCards(rewardPool);
 
         int rewardCount = Mathf.Min(3, rewardPool.Count);
@@ -223,38 +304,6 @@ public class BattleManager : MonoBehaviour
 
     #endregion
 
-    #region Enemy Turn
-
-    private IEnumerator EnemyTurnRoutine()
-    {
-        SetState(BattleState.Busy);
-        RefreshUI();
-
-        yield return new WaitForSeconds(enemyAttackDelay);
-
-        Debug.Log($"{enemyUnit.unitName} attacks Player");
-        playerUnit.TakeDamage(enemyUnit.attackPower);
-        RefreshUI();
-
-        if (CheckBattleEnd())
-            yield break;
-
-        yield return new WaitForSeconds(actionDelay);
-
-        statusEffectController.ProcessTurnEnd(enemyUnit);
-        RefreshUI();
-
-        if (CheckBattleEnd())
-            yield break;
-
-        yield return new WaitForSeconds(actionDelay);
-
-        Debug.Log("Enemy Turn End");
-        StartPlayerTurn();
-    }
-
-    #endregion
-
     #region Card System
 
     private void InitializePermanentDeck()
@@ -275,7 +324,7 @@ public class BattleManager : MonoBehaviour
         for (int i = 0; i < cards.Count; i++)
         {
             CardInstance temp = cards[i];
-            int randomIndex = UnityEngine.Random.Range(i, cards.Count);
+            int randomIndex = Random.Range(i, cards.Count);
             cards[i] = cards[randomIndex];
             cards[randomIndex] = temp;
         }
@@ -307,9 +356,7 @@ public class BattleManager : MonoBehaviour
             }
 
             if (drawPile.Count == 0)
-            {
                 ReshuffleDiscardIntoDrawPile();
-            }
 
             if (drawPile.Count == 0)
             {
@@ -402,7 +449,7 @@ public class BattleManager : MonoBehaviour
             return;
         }
 
-        CardInstance selectedCard = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+        CardInstance selectedCard = candidates[Random.Range(0, candidates.Count)];
 
         drawPile.Remove(selectedCard);
         hand.Add(selectedCard);
@@ -425,44 +472,6 @@ public class BattleManager : MonoBehaviour
         statusEffectController.burnExplosionDamageMultiplier = 2;
     }
 
-    public bool HasStartPassive(StartPassiveType startPassiveType)
-    {
-        return playerUnit.selectedStartPassive == startPassiveType;
-    }
-
-    #endregion
-
-    #region Battle Helpers
-
-    private void SetState(BattleState newState)
-    {
-        state = newState;
-        UpdateDebugUI();
-    }
-
-    private bool CheckBattleEnd()
-    {
-        if (enemyUnit.IsDead())
-        {
-            SetState(BattleState.Win);
-            Debug.Log("Player Wins!");
-            GenerateCardRewards();
-            ShowRewardUI();
-            RefreshUI();
-            return true;
-        }
-
-        if (playerUnit.IsDead())
-        {
-            SetState(BattleState.Lose);
-            Debug.Log("Player Loses...");
-            RefreshUI();
-            return true;
-        }
-
-        return false;
-    }
-
     #endregion
 
     #region UI
@@ -475,37 +484,6 @@ public class BattleManager : MonoBehaviour
             endTurnButton.interactable = (state == BattleState.PlayerTurn);
 
         UpdateDebugUI();
-    }
-
-    private void UpdateHandUI()
-    {
-        if (handButtons == null || handButtonTexts == null)
-            return;
-
-        for (int i = 0; i < handButtons.Length; i++)
-        {
-            if (i < hand.Count)
-            {
-                CardInstance card = hand[i];
-
-                handButtons[i].gameObject.SetActive(true);
-                handButtonTexts[i].text = $"{card.CardName} ({card.Cost})";
-
-                handButtons[i].onClick.RemoveAllListeners();
-                handButtons[i].onClick.AddListener(() => UseCard(card));
-
-                bool canUse =
-                    state == BattleState.PlayerTurn &&
-                    currentEnergy >= card.Cost;
-
-                handButtons[i].interactable = canUse;
-            }
-            else
-            {
-                handButtons[i].onClick.RemoveAllListeners();
-                handButtons[i].gameObject.SetActive(false);
-            }
-        }
     }
 
     private void ShowRewardUI()
@@ -565,6 +543,35 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    private void UpdateHandUI()
+    {
+        if (handButtons == null || handButtonTexts == null)
+            return;
+
+        for (int i = 0; i < handButtons.Length; i++)
+        {
+            if (i < hand.Count)
+            {
+                CardInstance card = hand[i];
+
+                handButtons[i].gameObject.SetActive(true);
+                handButtonTexts[i].text = $"{card.CardName} ({card.Cost})";
+
+                handButtons[i].onClick.RemoveAllListeners();
+                handButtons[i].onClick.AddListener(() => UseCard(card));
+
+                handButtons[i].interactable =
+                    state == BattleState.PlayerTurn &&
+                    currentEnergy >= card.Cost;
+            }
+            else
+            {
+                handButtons[i].onClick.RemoveAllListeners();
+                handButtons[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
     private void UpdateDebugUI()
     {
         int playerPoison = 0;
@@ -576,7 +583,6 @@ public class BattleManager : MonoBehaviour
         {
             playerPoison = statusEffectController.GetStack(playerUnit, StatusEffectType.Poison);
             playerBurn = statusEffectController.GetStack(playerUnit, StatusEffectType.Burn);
-
             enemyPoison = statusEffectController.GetStack(enemyUnit, StatusEffectType.Poison);
             enemyBurn = statusEffectController.GetStack(enemyUnit, StatusEffectType.Burn);
         }
