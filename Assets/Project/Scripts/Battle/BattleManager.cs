@@ -43,6 +43,11 @@ public class BattleManager : MonoBehaviour
     public TextMeshProUGUI[] rewardButtonTexts;
     public Button skipRewardButton;
 
+    [Header("UI - Start Passive")]
+    public GameObject chooseStartPassivePanel;
+    public Button[] startPassiveButtons;
+    public TextMeshProUGUI[] startPassiveButtonTexts;
+
     [Header("Debug UI")]
     public TextMeshProUGUI playerHpText;
     public TextMeshProUGUI enemyHpText;
@@ -73,6 +78,51 @@ public class BattleManager : MonoBehaviour
     private void Start()
     {
         InitializePermanentDeck();
+        ShowStartPassiveSelection();
+    }
+
+    private void ShowStartPassiveSelection()
+    {
+        if (chooseStartPassivePanel != null)
+            chooseStartPassivePanel.SetActive(true);
+
+        if (startPassiveButtons == null || startPassiveButtonTexts == null)
+            return;
+
+        StartPassiveType[] choices = new StartPassiveType[]
+        {
+        StartPassiveType.PoisonCore,
+        StartPassiveType.BurnCore
+        };
+
+        for (int i = 0; i < startPassiveButtons.Length; i++)
+        {
+            if (i < choices.Length)
+            {
+                StartPassiveType passive = choices[i];
+
+                startPassiveButtons[i].gameObject.SetActive(true);
+                startPassiveButtonTexts[i].text = passive.ToString();
+
+                startPassiveButtons[i].onClick.RemoveAllListeners();
+                startPassiveButtons[i].onClick.AddListener(() => SelectStartPassive(passive));
+            }
+            else
+            {
+                startPassiveButtons[i].onClick.RemoveAllListeners();
+                startPassiveButtons[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    public void SelectStartPassive(StartPassiveType passive)
+    {
+        playerUnit.selectedStartPassive = passive;
+        Debug.Log($"Selected Start Passive: {passive}");
+
+        if (chooseStartPassivePanel != null)
+            chooseStartPassivePanel.SetActive(false);
+
         StartBattle();
     }
 
@@ -375,9 +425,9 @@ public class BattleManager : MonoBehaviour
         statusEffectController.burnExplosionDamageMultiplier = 2;
     }
 
-    public bool HasPassive(PassiveType passiveType)
+    public bool HasStartPassive(StartPassiveType startPassiveType)
     {
-        return playerUnit.activePassives.Contains(passiveType);
+        return playerUnit.selectedStartPassive == startPassiveType;
     }
 
     #endregion

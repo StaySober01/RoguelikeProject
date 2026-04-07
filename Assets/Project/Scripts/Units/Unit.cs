@@ -8,6 +8,7 @@ public class Unit : MonoBehaviour
     public int currentHp = 30;
     public int attackPower = 5;
     public int currentBlock = 0;
+    public StartPassiveType selectedStartPassive;
 
     public UnitStatusData statusData = new();
 
