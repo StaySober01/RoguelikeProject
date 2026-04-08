@@ -35,7 +35,13 @@ public class BattleManager : MonoBehaviour
     public List<CardInstance> hand = new();
     public List<CardInstance> discardPile = new();
     public List<CardInstance> deck = new();
-    private List<CardInstance> rewardChoices = new();
+    private List<CardInstance> rewardCardChoices = new();
+
+    [Header("Relics")]
+    public List<RelicType> activeRelics = new();
+    private List<RelicType> rewardRelicChoices = new();
+
+    private RelicEffectCache relicEffectCache = new();
 
     [Header("UI - Hand")]
     public Button[] handButtons;
@@ -66,6 +72,8 @@ public class BattleManager : MonoBehaviour
 
     private bool doubleExplosionDamageThisTurn = false;
     private CardEffectResolver cardEffectResolver = new();
+    private int battleWinCount = 0;
+    private RewardType currentRewardType;
 
     #endregion
 
@@ -193,9 +201,9 @@ public class BattleManager : MonoBehaviour
         if (enemyUnit.IsDead())
         {
             SetState(BattleState.Win);
+            battleWinCount++;
             Debug.Log("Player Wins!");
-            GenerateCardRewards();
-            ShowRewardUI();
+            ShowBattleReward();
             RefreshUI();
             return true;
         }
@@ -255,7 +263,7 @@ public class BattleManager : MonoBehaviour
 
     private void GenerateCardRewards()
     {
-        rewardChoices.Clear();
+        rewardCardChoices.Clear();
 
         List<CardInstance> rewardPool = CardFactory.CreateRewardCardPool();
         ShuffleCards(rewardPool);
@@ -264,7 +272,7 @@ public class BattleManager : MonoBehaviour
 
         for (int i = 0; i < rewardCount; i++)
         {
-            rewardChoices.Add(rewardPool[i]);
+            rewardCardChoices.Add(rewardPool[i]);
         }
     }
 
@@ -275,6 +283,52 @@ public class BattleManager : MonoBehaviour
 
         HideRewardUI();
         StartNextBattle();
+    }
+
+    private void GenerateRelicRewards()
+    {
+        rewardRelicChoices.Clear();
+
+        List<RelicType> relicPool = new List<RelicType>
+    {
+        RelicType.VenomSac,
+        RelicType.SmolderingAsh,
+        RelicType.VolatileMixture
+    };
+
+        relicPool.RemoveAll(relic => activeRelics.Contains(relic));
+
+        ShuffleRelics(relicPool);
+
+        int rewardCount = Mathf.Min(3, relicPool.Count);
+
+        for (int i = 0; i < rewardCount; i++)
+        {
+            rewardRelicChoices.Add(relicPool[i]);
+        }
+    }
+
+    public void SelectRelicReward(RelicType relicType)
+    {
+        AddRelic(relicType);
+        HideRewardUI();
+        StartNextBattle();
+    }
+
+    private void ShowBattleReward()
+    {
+        if (ShouldShowRelicReward())
+        {
+            currentRewardType = RewardType.Relic;
+            GenerateRelicRewards();
+            ShowRelicRewardUI();
+        }
+        else
+        {
+            currentRewardType = RewardType.Card;
+            GenerateCardRewards();
+            ShowCardRewardUI();
+        }
     }
 
     public void SkipReward()
@@ -300,6 +354,11 @@ public class BattleManager : MonoBehaviour
         enemyUnit.ClearStatusData();
 
         enemyUnit.currentHp = enemyUnit.maxHp;
+    }
+
+    private bool ShouldShowRelicReward()
+    {
+        return battleWinCount % 3 == 0;
     }
 
     #endregion
@@ -474,6 +533,76 @@ public class BattleManager : MonoBehaviour
 
     #endregion
 
+    #region Relic System
+    public void RebuildRelicEffectCache()
+    {
+        relicEffectCache = new RelicEffectCache();
+
+        foreach (RelicType relic in activeRelics)
+        {
+            switch (relic)
+            {
+                case RelicType.VenomSac:
+                    relicEffectCache.bonusPoisonOnApply += 1;
+                    break;
+
+                case RelicType.SmolderingAsh:
+                    relicEffectCache.drawOnBurnExplosion += 1;
+                    break;
+
+                case RelicType.VolatileMixture:
+                    relicEffectCache.bonusDamageToPoisonAndBurnTarget += 2;
+                    break;
+            }
+        }
+    }
+
+    public void AddRelic(RelicType relicType)
+    {
+        activeRelics.Add(relicType);
+        RebuildRelicEffectCache();
+        Debug.Log($"Relic acquired: {relicType}");
+    }
+
+    private void ShuffleRelics(List<RelicType> relics)
+    {
+        for (int i = 0; i < relics.Count; i++)
+        {
+            RelicType temp = relics[i];
+            int randomIndex = Random.Range(i, relics.Count);
+            relics[i] = relics[randomIndex];
+            relics[randomIndex] = temp;
+        }
+    }
+
+    public int GetBonusPoisonOnApply()
+    {
+        int amount = relicEffectCache.bonusPoisonOnApply;
+
+        if (HasStartPassive(StartPassiveType.PoisonCore))
+            amount += 1;
+
+        return amount;
+    }
+
+    public int GetDrawOnBurnExplosion()
+    {
+        return relicEffectCache.drawOnBurnExplosion;
+    }
+
+    public int GetBonusDamageToPoisonAndBurnTarget(Unit target)
+    {
+        bool hasPoison = statusEffectController.HasStatus(target, StatusEffectType.Poison);
+        bool hasBurn = statusEffectController.HasStatus(target, StatusEffectType.Burn);
+
+        if (hasPoison && hasBurn)
+            return relicEffectCache.bonusDamageToPoisonAndBurnTarget;
+
+        return 0;
+    }
+
+    #endregion
+
     #region UI
 
     private void RefreshUI()
@@ -486,7 +615,7 @@ public class BattleManager : MonoBehaviour
         UpdateDebugUI();
     }
 
-    private void ShowRewardUI()
+    private void ShowCardRewardUI()
     {
         if (rewardPanel != null)
             rewardPanel.SetActive(true);
@@ -496,9 +625,9 @@ public class BattleManager : MonoBehaviour
 
         for (int i = 0; i < rewardButtons.Length; i++)
         {
-            if (i < rewardChoices.Count)
+            if (i < rewardCardChoices.Count)
             {
-                CardInstance card = rewardChoices[i];
+                CardInstance card = rewardCardChoices[i];
 
                 rewardButtons[i].gameObject.SetActive(true);
                 rewardButtonTexts[i].text = $"{card.CardName} ({card.Cost})";
@@ -521,9 +650,45 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    private void ShowRelicRewardUI()
+    {
+        if (rewardPanel != null)
+            rewardPanel.SetActive(true);
+
+        if (rewardButtons == null || rewardButtonTexts == null)
+            return;
+
+        for (int i = 0; i < rewardButtons.Length; i++)
+        {
+            if (i < rewardRelicChoices.Count)
+            {
+                RelicType relic = rewardRelicChoices[i];
+
+                rewardButtons[i].gameObject.SetActive(true);
+                rewardButtonTexts[i].text = GetRelicDisplayName(relic);
+
+                rewardButtons[i].onClick.RemoveAllListeners();
+                rewardButtons[i].onClick.AddListener(() => SelectRelicReward(relic));
+            }
+            else
+            {
+                rewardButtons[i].onClick.RemoveAllListeners();
+                rewardButtons[i].gameObject.SetActive(false);
+            }
+        }
+
+        if (skipRewardButton != null)
+        {
+            skipRewardButton.gameObject.SetActive(true);
+            skipRewardButton.onClick.RemoveAllListeners();
+            skipRewardButton.onClick.AddListener(SkipReward);
+        }
+    }
+
     private void HideRewardUI()
     {
-        rewardChoices.Clear();
+        rewardCardChoices.Clear();
+        rewardRelicChoices.Clear();
 
         if (rewardPanel != null)
             rewardPanel.SetActive(false);
@@ -613,6 +778,24 @@ public class BattleManager : MonoBehaviour
             stateText.text =
                 $"State: {state}\n" +
                 $"Draw: {drawPile.Count}  Hand: {hand.Count}  Discard: {discardPile.Count}";
+        }
+    }
+
+    private string GetRelicDisplayName(RelicType relicType)
+    {
+        switch (relicType)
+        {
+            case RelicType.VenomSac:
+                return "Venom Sac";
+
+            case RelicType.SmolderingAsh:
+                return "Smoldering Ash";
+
+            case RelicType.VolatileMixture:
+                return "Volatile Mixture";
+
+            default:
+                return relicType.ToString();
         }
     }
 

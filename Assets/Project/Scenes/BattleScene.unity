@@ -1656,12 +1656,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SampleUnit
   unitName: sukyeom
-  maxHp: 25
-  currentHp: 25
+  maxHp: 5
+  currentHp: 5
   attackPower: 1
   currentBlock: 0
   selectedStartPassive: 0
-  activePassives: 
+  activeRelics: 
 --- !u!1 &352981199
 GameObject:
   m_ObjectHideFlags: 0
@@ -3225,6 +3225,7 @@ MonoBehaviour:
   hand: []
   discardPile: []
   deck: []
+  activeRelics: 
   handButtons:
   - {fileID: 573521844}
   - {fileID: 257365942}
@@ -3673,7 +3674,7 @@ MonoBehaviour:
   attackPower: 7
   currentBlock: 0
   selectedStartPassive: 0
-  activePassives: 
+  activeRelics: 
 --- !u!1 &1348571145
 GameObject:
   m_ObjectHideFlags: 0

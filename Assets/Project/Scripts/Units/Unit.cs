@@ -12,7 +12,7 @@ public class Unit : MonoBehaviour
 
     public UnitStatusData statusData = new();
 
-    public List<PassiveType> activePassives = new();
+    public List<RelicType> activeRelics = new();
 
     private void Awake()
     {
