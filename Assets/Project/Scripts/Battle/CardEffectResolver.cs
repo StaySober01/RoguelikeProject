@@ -134,6 +134,26 @@ public class CardEffectResolver
                 battleManager.DrawCards(burn);
                 Debug.Log("Flame Eccelerate: Draw cards equal to the target's Burn stacks.");
                 break;
+
+            case "vulnerable":
+                battleManager.statusEffectController.ApplyVulnerable(
+                    battleManager.enemyUnit,
+                    2
+                );
+                Debug.Log("Vulnerable: Apply 2 Vulnerable.");
+                break;
+
+            case "spot_weakness":
+                battleManager.enemyUnit.TakeDamage(7);
+                Debug.Log("Spot Weakness: Deal 7 damage.");
+
+                if (battleManager.statusEffectController.HasStatus(
+                    battleManager.enemyUnit, StatusEffectType.Vulnerable))
+                {
+                    battleManager.enemyUnit.TakeDamage(7);
+                    Debug.Log("Spot Weakness: Target is Vulnerable, trigger once more.");
+                }
+                break;
         }
     }
 }

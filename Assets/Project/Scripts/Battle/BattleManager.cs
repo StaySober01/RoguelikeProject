@@ -28,6 +28,10 @@ public class BattleManager : MonoBehaviour
     public int enemyAttackDelay = 1;
     public float actionDelay = 0.5f;
 
+    [Header("Enemy Scaling")]
+    public int baseEnemyHp;
+    public int baseEnemyAttack;
+
     [Header("Card System")]
     public int drawCountPerTurn = 5;
     public int maxHandSize = 5;
@@ -93,6 +97,8 @@ public class BattleManager : MonoBehaviour
 
     private void Start()
     {
+        baseEnemyHp = enemyUnit.maxHp;
+        baseEnemyAttack = enemyUnit.attackPower;
         InitializePermanentDeck();
         ShowStartPassiveSelection();
     }
@@ -157,6 +163,7 @@ public class BattleManager : MonoBehaviour
     public void StartBattle()
     {
         InitializeBattleDeck();
+        ScaleEnemyForBattle();
         Debug.Log("Battle Start");
         StartPlayerTurn();
     }
@@ -217,6 +224,13 @@ public class BattleManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    private void ScaleEnemyForBattle()
+    {
+        enemyUnit.maxHp = baseEnemyHp + (battleWinCount * 3);
+        enemyUnit.currentHp = enemyUnit.maxHp;
+        enemyUnit.attackPower = baseEnemyAttack + battleWinCount;
     }
 
     private void SetState(BattleState newState)
@@ -290,11 +304,11 @@ public class BattleManager : MonoBehaviour
         rewardRelicChoices.Clear();
 
         List<RelicType> relicPool = new List<RelicType>
-    {
-        RelicType.VenomSac,
-        RelicType.SmolderingAsh,
-        RelicType.VolatileMixture
-    };
+        {
+            RelicType.VenomSac,
+            RelicType.SmolderingAsh,
+            RelicType.VolatileMixture
+        };
 
         relicPool.RemoveAll(relic => activeRelics.Contains(relic));
 

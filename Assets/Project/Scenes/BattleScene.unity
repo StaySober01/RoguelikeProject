@@ -1656,9 +1656,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SampleUnit
   unitName: sukyeom
-  maxHp: 5
-  currentHp: 5
-  attackPower: 1
+  maxHp: 25
+  currentHp: 25
+  attackPower: 6
   currentBlock: 0
   selectedStartPassive: 0
   activeRelics: 
@@ -3219,6 +3219,8 @@ MonoBehaviour:
   currentEnergy: 0
   enemyAttackDelay: 1
   actionDelay: 0.5
+  baseEnemyHp: 0
+  baseEnemyAttack: 0
   drawCountPerTurn: 5
   maxHandSize: 5
   drawPile: []
@@ -3669,8 +3671,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SampleUnit
   unitName: Player
-  maxHp: 30
-  currentHp: 30
+  maxHp: 50
+  currentHp: 50
   attackPower: 7
   currentBlock: 0
   selectedStartPassive: 0
@@ -4701,7 +4703,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StatusEffectController
   burnExplosionThreshold: 3
   poisonDamagePerStack: 1
-  burnExplosionDamage: 8
+  burnExplosionDamage: 10
   burnExplosionDamageMultiplier: 1
 --- !u!1 &1992279419
 GameObject:

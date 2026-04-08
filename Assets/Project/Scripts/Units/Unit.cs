@@ -24,6 +24,11 @@ public class Unit : MonoBehaviour
     {
         int remainingDamage = damage;
 
+        if (statusData.Has(StatusEffectType.Vulnerable))
+        {
+            remainingDamage = Mathf.CeilToInt(damage * 1.5f);
+        }
+
         if (currentBlock > 0)
         {
             int blockedAmount = Mathf.Min(currentBlock, remainingDamage);

@@ -10,10 +10,10 @@ public static class CardFactory
                 "Attack",
                 CardCategory.Attack,
                 1,
-                "Deal 5 damage.",
+                "Deal 6 damage.",
                 new List<CardEffectData>
                 {
-                    new CardEffectData(CardEffectType.DealDamage, 5)
+                    new CardEffectData(CardEffectType.DealDamage, 6)
                 },
                 new List<CardTag>
                 {
@@ -29,10 +29,10 @@ public static class CardFactory
                 "Defend",
                 CardCategory.Skill,
                 1,
-                "Gain 6 Block.",
+                "Gain 5 Block.",
                 new List<CardEffectData>
                 {
-                    new CardEffectData(CardEffectType.GainBlock, 6)
+                    new CardEffectData(CardEffectType.GainBlock, 5)
                 },
                 new List<CardTag>
                 {
@@ -309,6 +309,39 @@ public static class CardFactory
                 }));
     }
 
+    public static CardInstance CreateVulnerable()
+    {
+        return new CardInstance(
+            new CardData(
+                "vulnerable",
+                "Vulnerable",
+                CardCategory.Skill,
+                1,
+                "Apply 2 Vulnerable.",
+                new List<CardEffectData>(),
+                new List<CardTag>
+                {
+                CardTag.Vulnerable
+                }));
+    }
+
+    public static CardInstance CreateSpotWeakness()
+    {
+        return new CardInstance(
+            new CardData(
+                "spot_weakness",
+                "Spot Weakness",
+                CardCategory.Attack,
+                1,
+                "Deal 7 damage. If target is Vulnerable, trigger once more.",
+                new List<CardEffectData>(),
+                new List<CardTag>
+                {
+                CardTag.Vulnerable,
+                CardTag.Damage
+                }));
+    }
+
     public static List<CardInstance> CreateStarterDeck()
     {
         return new List<CardInstance>
@@ -319,7 +352,7 @@ public static class CardFactory
             CreateDefend(),
             CreateDefend(),
             CreateDefend(),
-            CreateHeavyAttack(),
+            CreateHeavyAttack()
         };
     }
 
@@ -339,7 +372,9 @@ public static class CardFactory
             CreateOverclockedFlames(),
             CreateToxicBurst(),
             CreateFlameAccelerate(),
-            CreateToxicStacking()
+            CreateToxicStacking(),
+            CreateVulnerable(),
+            CreateSpotWeakness()
         };
     }
 }

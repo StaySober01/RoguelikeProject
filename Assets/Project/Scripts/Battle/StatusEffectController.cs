@@ -5,7 +5,7 @@ public class StatusEffectController : MonoBehaviour
     [Header("Status Effect Values")]
     public int burnExplosionThreshold = 3;
     public int poisonDamagePerStack = 1;
-    public int burnExplosionDamage = 8;
+    public int burnExplosionDamage = 10;
     public int burnExplosionDamageMultiplier = 1;
 
     private BattleManager battleManager;
@@ -42,6 +42,12 @@ public class StatusEffectController : MonoBehaviour
             return true;
         }
         return false;
+    }
+
+    public void ApplyVulnerable(Unit target, int amount)
+    {
+        target.statusData.AddStack(StatusEffectType.Vulnerable, amount);
+        Debug.Log($"{target.unitName} gains {amount} Vulnerable. Current Vulnerable: {GetStack(target, StatusEffectType.Vulnerable)}");
     }
 
     public void ProcessTurnEnd(Unit target)
