@@ -284,6 +284,17 @@ public class BattleManager : MonoBehaviour
         UpdateDebugUI();
     }
 
+    public void DealAttackDamage(Unit target, int baseDamage)
+    {
+        int bonusDamage = relicManager.GetBonusDamageToPoisonAndBurnTarget(target);
+        int finalDamage = baseDamage + bonusDamage;
+
+        target.TakeDamage(finalDamage);
+        TryGainEnergyFromVulnerableRelic(target);
+
+        Debug.Log($"Attack deals {finalDamage} damage. (Base: {baseDamage}, Bonus: {bonusDamage})");
+    }
+
     #endregion
 
     #region Enemy Turn

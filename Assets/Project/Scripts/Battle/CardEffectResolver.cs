@@ -11,9 +11,7 @@ public class CardEffectResolver
             switch (effect.effectType)
             {
                 case CardEffectType.DealDamage:
-                    int bonusDamage = battleManager.relicManager.GetBonusDamageToPoisonAndBurnTarget(battleManager.enemyUnit);
-                    battleManager.enemyUnit.TakeDamage(effect.amount + bonusDamage);
-                    battleManager.TryGainEnergyFromVulnerableRelic(battleManager.enemyUnit);
+                    battleManager.DealAttackDamage(battleManager.enemyUnit, effect.amount);
                     break;
 
                 case CardEffectType.GainBlock:
@@ -109,7 +107,7 @@ public class CardEffectResolver
             case "toxic_burst":
                 int poison = battleManager.statusEffectController.GetStack(
                     battleManager.enemyUnit, StatusEffectType.Poison);
-                battleManager.enemyUnit.TakeDamage(poison * 2);
+                battleManager.DealAttackDamage(battleManager.enemyUnit, poison * 2);
                 Debug.Log("Toxic Burst: Enemy takes twice the amount of poison.");
                 break;
 
@@ -145,13 +143,15 @@ public class CardEffectResolver
                 break;
 
             case "spot_weakness":
-                battleManager.enemyUnit.TakeDamage(7);
+                bool wasVulnerable = battleManager.statusEffectController.HasStatus(
+                    battleManager.enemyUnit, StatusEffectType.Vulnerable);
+
+                battleManager.DealAttackDamage(battleManager.enemyUnit, 7);
                 Debug.Log("Spot Weakness: Deal 7 damage.");
 
-                if (battleManager.statusEffectController.HasStatus(
-                    battleManager.enemyUnit, StatusEffectType.Vulnerable))
+                if (wasVulnerable)
                 {
-                    battleManager.enemyUnit.TakeDamage(7);
+                    battleManager.DealAttackDamage(battleManager.enemyUnit, 7);
                     Debug.Log("Spot Weakness: Target is Vulnerable, trigger once more.");
                 }
                 break;
@@ -178,7 +178,7 @@ public class CardEffectResolver
 
                 if (wasPoisoned)
                 {
-                    battleManager.enemyUnit.TakeDamage(5);
+                    battleManager.DealAttackDamage(battleManager.enemyUnit, 5);
                     Debug.Log("Poisonic Fury: Target was Poisoned, deal 5 damage.");
                 }
                 else
@@ -188,18 +188,18 @@ public class CardEffectResolver
                 break;
 
             case "pressure":
-                bool wasVulnerable = battleManager.statusEffectController.HasStatus(
+                wasVulnerable = battleManager.statusEffectController.HasStatus(
                     battleManager.enemyUnit,
                     StatusEffectType.Vulnerable
                 );
 
-                battleManager.enemyUnit.TakeDamage(10);
+                battleManager.DealAttackDamage(battleManager.enemyUnit, 10);
                 Debug.Log("Pressure: Deal 10 damage.");
 
                 if (wasVulnerable)
                 {
                     battleManager.GainEnergy(1);
-                    Debug.Log("Pressure: Target was Vulnerable, refund 1 Energy.");
+                    Debug.Log("Pressure: Target was Vulnerable, gain 1 Energy.");
                 }
                 break;
         }
