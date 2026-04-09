@@ -2,5 +2,6 @@ public enum RelicType
 {
     VenomSac,
     SmolderingAsh,
-    VolatileMixture
+    VolatileMixture,
+    PressurePoint
 }

@@ -70,14 +70,15 @@ public class BattleManager : MonoBehaviour
     public TextMeshProUGUI enemyHpText;
     public TextMeshProUGUI energyText;
     public TextMeshProUGUI stateText;
+    public TextMeshProUGUI battleText;
 
     [Header("Controllers")]
     public StatusEffectController statusEffectController;
 
-    private bool doubleExplosionDamageThisTurn = false;
     private CardEffectResolver cardEffectResolver = new();
     private int battleWinCount = 0;
     private RewardType currentRewardType;
+    private bool gainedEnergyFromVulnerableRelicThisTurn = false;
 
     #endregion
 
@@ -172,8 +173,8 @@ public class BattleManager : MonoBehaviour
     public void StartPlayerTurn()
     {
         playerUnit.ResetBlock();
+        gainedEnergyFromVulnerableRelicThisTurn = false;
         currentEnergy = maxEnergy;
-        doubleExplosionDamageThisTurn = false;
         statusEffectController.burnExplosionDamageMultiplier = 1;
 
         SetState(BattleState.PlayerTurn);
@@ -308,7 +309,8 @@ public class BattleManager : MonoBehaviour
         {
             RelicType.VenomSac,
             RelicType.SmolderingAsh,
-            RelicType.VolatileMixture
+            RelicType.VolatileMixture,
+            RelicType.PressurePoint
         };
 
         relicPool.RemoveAll(relic => activeRelics.Contains(relic));
@@ -542,7 +544,6 @@ public class BattleManager : MonoBehaviour
 
     public void EnableDoubleExplosionDamageThisTurn()
     {
-        doubleExplosionDamageThisTurn = true;
         statusEffectController.burnExplosionDamageMultiplier = 2;
     }
 
@@ -567,6 +568,10 @@ public class BattleManager : MonoBehaviour
 
                 case RelicType.VolatileMixture:
                     relicEffectCache.bonusDamageToPoisonAndBurnTarget += 2;
+                    break;
+
+                case RelicType.PressurePoint:
+                    relicEffectCache.gainEnergyOnAttackVulnerableTarget += 1;
                     break;
             }
         }
@@ -614,6 +619,29 @@ public class BattleManager : MonoBehaviour
             return relicEffectCache.bonusDamageToPoisonAndBurnTarget;
 
         return 0;
+    }
+
+    public int GetGainEnergyOnAttackVulnerableTarget()
+    {
+        return relicEffectCache.gainEnergyOnAttackVulnerableTarget;
+    }
+
+    public void TryGainEnergyFromVulnerableRelic(Unit target)
+    {
+        if (gainedEnergyFromVulnerableRelicThisTurn)
+            return;
+
+        if (GetGainEnergyOnAttackVulnerableTarget() <= 0)
+            return;
+
+        if (!statusEffectController.HasStatus(target, StatusEffectType.Vulnerable))
+            return;
+
+        currentEnergy += GetGainEnergyOnAttackVulnerableTarget();
+        gainedEnergyFromVulnerableRelicThisTurn = true;
+
+        Debug.Log("Pressure Point: Attacked Vulnerable target, gain 1 Energy.");
+        RefreshUI();
     }
 
     #endregion
@@ -800,6 +828,8 @@ public class BattleManager : MonoBehaviour
                 $"State: {state}\n" +
                 $"Draw: {drawPile.Count}  Hand: {hand.Count}  Discard: {discardPile.Count}";
         }
+        if (battleText != null)
+            battleText.text = $"Battle {battleWinCount + 1}";
     }
 
     private string GetRelicDisplayName(RelicType relicType)

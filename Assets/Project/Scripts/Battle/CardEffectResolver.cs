@@ -13,6 +13,7 @@ public class CardEffectResolver
                 case CardEffectType.DealDamage:
                     int bonusDamage = battleManager.GetBonusDamageToPoisonAndBurnTarget(battleManager.enemyUnit);
                     battleManager.enemyUnit.TakeDamage(effect.amount + bonusDamage);
+                    battleManager.TryGainEnergyFromVulnerableRelic(battleManager.enemyUnit);
                     break;
 
                 case CardEffectType.GainBlock:
