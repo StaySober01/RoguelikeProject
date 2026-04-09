@@ -149,11 +149,33 @@ public class BattleManager : MonoBehaviour
     {
         playerUnit.selectedStartPassive = passive;
         Debug.Log($"Selected Start Passive: {passive}");
+        AddStartPassiveCard(passive);
 
         if (chooseStartPassivePanel != null)
             chooseStartPassivePanel.SetActive(false);
 
         StartBattle();
+    }
+
+    private void AddStartPassiveCard(StartPassiveType passiveType)
+    {
+        switch (passiveType)
+        {
+            case StartPassiveType.PoisonCore:
+                deck.Add(CardFactory.CreatePoison());
+                Debug.Log("Start Passive Bonus: Added Poison card to deck.");
+                break;
+
+            case StartPassiveType.BurnCore:
+                deck.Add(CardFactory.CreateBurn());
+                Debug.Log("Start Passive Bonus: Added Burn card to deck.");
+                break;
+
+            case StartPassiveType.VulnerableCore:
+                deck.Add(CardFactory.CreateVulnerable());
+                Debug.Log("Start Passive Bonus: Added Vulnerable card to deck.");
+                break;
+        }
     }
 
     public bool HasStartPassive(StartPassiveType startPassiveType)

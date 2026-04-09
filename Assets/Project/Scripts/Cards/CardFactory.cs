@@ -285,7 +285,7 @@ public static class CardFactory
                 "toxic_stacking",
                 "Toxic Stacking",
                 CardCategory.Skill,
-                1,
+                2,
                 "Apply 1 Poison. If target is already poisoned, apply 2 additional Poison.",
                 new List<CardEffectData>(),
                 new List<CardTag> {
@@ -342,6 +342,58 @@ public static class CardFactory
                 }));
     }
 
+    public static CardInstance CreateTaunt()
+    {
+        return new CardInstance(
+            new CardData(
+                "taunt",
+                "Taunt",
+                CardCategory.Skill,
+                1,
+                "Gain 3 Block. Apply 2 Vulnerable.",
+                new List<CardEffectData>(),
+                new List<CardTag>
+                {
+                CardTag.Block,
+                CardTag.Vulnerable
+                }));
+    }
+
+    public static CardInstance CreatePoisonicFury()
+    {
+        return new CardInstance(
+            new CardData(
+                "poisonic_fury",
+                "Poisonic Fury",
+                CardCategory.Skill,
+                1,
+                "Apply 2 Vulnerable. If target is Poisoned, deal 5 damage.",
+                new List<CardEffectData>(),
+                new List<CardTag>
+                {
+                CardTag.Vulnerable,
+                CardTag.Poison,
+                CardTag.Damage
+                }));
+    }
+
+    public static CardInstance CreatePressure()
+    {
+        return new CardInstance(
+            new CardData(
+                "pressure",
+                "Pressure",
+                CardCategory.Attack,
+                2,
+                "Deal 10 damage. If target is Vulnerable, reduce cost by 1.",
+                new List<CardEffectData>(),
+                new List<CardTag>
+                {
+                CardTag.Vulnerable,
+                CardTag.Damage
+                }));
+    }
+
     public static List<CardInstance> CreateStarterDeck()
     {
         return new List<CardInstance>
@@ -374,7 +426,10 @@ public static class CardFactory
             CreateFlameAccelerate(),
             CreateToxicStacking(),
             CreateVulnerable(),
-            CreateSpotWeakness()
+            CreateSpotWeakness(),
+            CreateTaunt(),
+            CreatePoisonicFury(),
+            CreatePressure()
         };
     }
 }

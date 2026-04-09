@@ -155,6 +155,53 @@ public class CardEffectResolver
                     Debug.Log("Spot Weakness: Target is Vulnerable, trigger once more.");
                 }
                 break;
+
+            case "taunt":
+                battleManager.playerUnit.AddBlock(3);
+                battleManager.statusEffectController.ApplyVulnerable(
+                    battleManager.enemyUnit,
+                    2
+                );
+                Debug.Log("Taunt: Gain 3 Block and apply 2 Vulnerable.");
+                break;
+
+            case "poisonic_fury":
+                wasPoisoned = battleManager.statusEffectController.HasStatus(
+                    battleManager.enemyUnit,
+                    StatusEffectType.Poison
+                );
+
+                battleManager.statusEffectController.ApplyVulnerable(
+                    battleManager.enemyUnit,
+                    2
+                );
+
+                if (wasPoisoned)
+                {
+                    battleManager.enemyUnit.TakeDamage(5);
+                    Debug.Log("Poisonic Fury: Target was Poisoned, deal 5 damage.");
+                }
+                else
+                {
+                    Debug.Log("Poisonic Fury: Apply 2 Vulnerable.");
+                }
+                break;
+
+            case "pressure":
+                bool wasVulnerable = battleManager.statusEffectController.HasStatus(
+                    battleManager.enemyUnit,
+                    StatusEffectType.Vulnerable
+                );
+
+                battleManager.enemyUnit.TakeDamage(10);
+                Debug.Log("Pressure: Deal 10 damage.");
+
+                if (wasVulnerable)
+                {
+                    battleManager.GainEnergy(1);
+                    Debug.Log("Pressure: Target was Vulnerable, refund 1 Energy.");
+                }
+                break;
         }
     }
 }
