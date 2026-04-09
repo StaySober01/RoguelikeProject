@@ -253,7 +253,7 @@ public static class CardFactory
                 "overclocked_flames",
                 "Overclocked Flames",
                 CardCategory.Skill,
-                1,
+                0,
                 "Explosion damage is doubled this turn.",
                 new List<CardEffectData>(),
                 new List<CardTag>
@@ -352,8 +352,7 @@ public static class CardFactory
             CreateDefend(),
             CreateDefend(),
             CreateDefend(),
-            CreateHeavyAttack(),
-            CreateVulnerable()
+            CreateHeavyAttack()
         };
     }
 

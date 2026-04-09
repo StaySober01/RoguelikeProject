@@ -3,5 +3,7 @@ public enum RelicType
     VenomSac,
     SmolderingAsh,
     VolatileMixture,
-    PressurePoint
+    PressurePoint,
+    OpeningSalvo,
+    QuickStart
 }

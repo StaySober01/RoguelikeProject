@@ -4,4 +4,6 @@ public class RelicEffectCache
     public int drawOnBurnExplosion;
     public int bonusDamageToPoisonAndBurnTarget;
     public int gainEnergyOnAttackVulnerableTarget;
+    public int damageToEnemyAtTurnStart;
+    public int bonusEnergyOnFirstTurn;
 }

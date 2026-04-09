@@ -79,6 +79,7 @@ public class BattleManager : MonoBehaviour
     private int battleWinCount = 0;
     private RewardType currentRewardType;
     private bool gainedEnergyFromVulnerableRelicThisTurn = false;
+    private bool isFirstPlayerTurnOfBattle = true;
 
     #endregion
 
@@ -164,6 +165,7 @@ public class BattleManager : MonoBehaviour
 
     public void StartBattle()
     {
+        isFirstPlayerTurnOfBattle = true;
         InitializeBattleDeck();
         ScaleEnemyForBattle();
         Debug.Log("Battle Start");
@@ -175,9 +177,26 @@ public class BattleManager : MonoBehaviour
         playerUnit.ResetBlock();
         gainedEnergyFromVulnerableRelicThisTurn = false;
         currentEnergy = maxEnergy;
+        if (isFirstPlayerTurnOfBattle)
+        {
+            int bonusEnergy = GetBonusEnergyOnFirstTurn();
+
+            if (bonusEnergy > 0)
+            {
+                currentEnergy += bonusEnergy;
+                Debug.Log($"Quick Start: Gain {bonusEnergy} bonus Energy on first turn.");
+            }
+
+            isFirstPlayerTurnOfBattle = false;
+        }
         statusEffectController.burnExplosionDamageMultiplier = 1;
 
         SetState(BattleState.PlayerTurn);
+
+        TriggerTurnStartRelics();
+
+        if (CheckBattleEnd())
+            return;
 
         DiscardHand();
         DrawCards(drawCountPerTurn);
@@ -310,7 +329,9 @@ public class BattleManager : MonoBehaviour
             RelicType.VenomSac,
             RelicType.SmolderingAsh,
             RelicType.VolatileMixture,
-            RelicType.PressurePoint
+            RelicType.PressurePoint,
+            RelicType.OpeningSalvo,
+            RelicType.QuickStart
         };
 
         relicPool.RemoveAll(relic => activeRelics.Contains(relic));
@@ -573,6 +594,14 @@ public class BattleManager : MonoBehaviour
                 case RelicType.PressurePoint:
                     relicEffectCache.gainEnergyOnAttackVulnerableTarget += 1;
                     break;
+
+                case RelicType.OpeningSalvo:
+                    relicEffectCache.damageToEnemyAtTurnStart += 3;
+                    break;
+
+                case RelicType.QuickStart:
+                    relicEffectCache.bonusEnergyOnFirstTurn += 1;
+                    break;
             }
         }
     }
@@ -642,6 +671,28 @@ public class BattleManager : MonoBehaviour
 
         Debug.Log("Pressure Point: Attacked Vulnerable target, gain 1 Energy.");
         RefreshUI();
+    }
+
+    public int GetDamageToEnemyAtTurnStart()
+    {
+        return relicEffectCache.damageToEnemyAtTurnStart;
+    }
+
+    private void TriggerTurnStartRelics()
+    {
+        int damage = GetDamageToEnemyAtTurnStart();
+
+        if (damage > 0)
+        {
+            enemyUnit.TakeDamage(damage);
+            Debug.Log($"Opening Salvo: Deal {damage} damage to enemy at turn start.");
+            RefreshUI();
+        }
+    }
+
+    public int GetBonusEnergyOnFirstTurn()
+    {
+        return relicEffectCache.bonusEnergyOnFirstTurn;
     }
 
     #endregion

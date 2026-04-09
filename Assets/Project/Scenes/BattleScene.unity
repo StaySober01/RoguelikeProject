@@ -1731,8 +1731,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SampleUnit
   unitName: sukyeom
-  maxHp: 10
-  currentHp: 10
+  maxHp: 1
+  currentHp: 1
   attackPower: 1
   currentBlock: 0
   selectedStartPassive: 0
