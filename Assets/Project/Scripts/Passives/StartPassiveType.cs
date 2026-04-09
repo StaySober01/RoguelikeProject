@@ -1,5 +1,6 @@
 public enum StartPassiveType
 {
     PoisonCore,
-    BurnCore
+    BurnCore,
+    VulnerableCore
 }

@@ -21,6 +21,15 @@ public class UnitStatusData
             stacks[type] = newValue;
     }
 
+    public void ReduceStack(StatusEffectType type, int amount)
+    {
+        int newValue = GetStack(type) - amount;
+        if (newValue <= 0)
+            stacks.Remove(type);
+        else 
+            stacks[type] = newValue;
+    }
+
     public void SetStack(StatusEffectType type, int value)
     {
         if (value <= 0)

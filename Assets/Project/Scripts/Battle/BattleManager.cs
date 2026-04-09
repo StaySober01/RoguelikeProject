@@ -118,7 +118,8 @@ public class BattleManager : MonoBehaviour
         StartPassiveType[] choices =
         {
             StartPassiveType.PoisonCore,
-            StartPassiveType.BurnCore
+            StartPassiveType.BurnCore,
+            StartPassiveType.VulnerableCore
         };
 
         for (int i = 0; i < startPassiveButtons.Length; i++)
@@ -755,15 +756,19 @@ public class BattleManager : MonoBehaviour
     {
         int playerPoison = 0;
         int playerBurn = 0;
+        int playerVulnerable = 0;
         int enemyPoison = 0;
         int enemyBurn = 0;
+        int enemyVulnerable = 0;
 
         if (statusEffectController != null && playerUnit != null && enemyUnit != null)
         {
             playerPoison = statusEffectController.GetStack(playerUnit, StatusEffectType.Poison);
             playerBurn = statusEffectController.GetStack(playerUnit, StatusEffectType.Burn);
+            playerVulnerable = statusEffectController.GetStack(playerUnit, StatusEffectType.Vulnerable);
             enemyPoison = statusEffectController.GetStack(enemyUnit, StatusEffectType.Poison);
             enemyBurn = statusEffectController.GetStack(enemyUnit, StatusEffectType.Burn);
+            enemyVulnerable = statusEffectController.GetStack(enemyUnit,StatusEffectType.Vulnerable);
         }
 
         if (playerHpText != null && playerUnit != null)
@@ -772,7 +777,8 @@ public class BattleManager : MonoBehaviour
                 $"Player HP: {playerUnit.currentHp}/{playerUnit.maxHp}  " +
                 $"Block: {playerUnit.currentBlock}  " +
                 $"Poison: {playerPoison}  " +
-                $"Burn: {playerBurn}";
+                $"Burn: {playerBurn}  " +
+                $"Vulerable: {playerVulnerable}";
         }
 
         if (enemyHpText != null && enemyUnit != null)
@@ -781,7 +787,8 @@ public class BattleManager : MonoBehaviour
                 $"Enemy HP: {enemyUnit.currentHp}/{enemyUnit.maxHp}  " +
                 $"Block: {enemyUnit.currentBlock}  " +
                 $"Poison: {enemyPoison}  " +
-                $"Burn: {enemyBurn}";
+                $"Burn: {enemyBurn}  " +
+                $"Vulerable: {enemyVulnerable}";
         }
 
         if (energyText != null)

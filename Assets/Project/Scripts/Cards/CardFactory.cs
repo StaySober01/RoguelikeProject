@@ -352,7 +352,8 @@ public static class CardFactory
             CreateDefend(),
             CreateDefend(),
             CreateDefend(),
-            CreateHeavyAttack()
+            CreateHeavyAttack(),
+            CreateVulnerable()
         };
     }
 

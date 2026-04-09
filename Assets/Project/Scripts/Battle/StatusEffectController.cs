@@ -46,6 +46,10 @@ public class StatusEffectController : MonoBehaviour
 
     public void ApplyVulnerable(Unit target, int amount)
     {
+        if (battleManager.HasStartPassive(StartPassiveType.VulnerableCore))
+        {
+            amount += 1;
+        }
         target.statusData.AddStack(StatusEffectType.Vulnerable, amount);
         Debug.Log($"{target.unitName} gains {amount} Vulnerable. Current Vulnerable: {GetStack(target, StatusEffectType.Vulnerable)}");
     }
@@ -53,6 +57,7 @@ public class StatusEffectController : MonoBehaviour
     public void ProcessTurnEnd(Unit target)
     {
         ProcessPoisonTurnEnd(target);
+        ProcessVulnerableTurnEnd(target);
     }
 
     private void ProcessPoisonTurnEnd(Unit target)
@@ -64,6 +69,15 @@ public class StatusEffectController : MonoBehaviour
 
         Debug.Log($"{target.unitName} takes {poison} poison damage at turn end.");
         target.TakeDamage(poison);
+    }
+
+    private void ProcessVulnerableTurnEnd(Unit target)
+    {
+        if (GetStack(target, StatusEffectType.Vulnerable) > 0)
+        {
+            target.statusData.ReduceStack(StatusEffectType.Vulnerable, 1);
+            Debug.Log($"{target.unitName}'s Vulnerable decreases by 1.");
+        }
     }
 
     private void TriggerBurnExplosion(Unit target)
