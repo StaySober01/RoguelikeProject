@@ -17,7 +17,7 @@ public class StatusEffectController : MonoBehaviour
 
     public void ApplyPoison(Unit target, int amount)
     {
-        amount += battleManager.GetBonusPoisonOnApply();
+        amount += battleManager.relicManager.GetBonusPoisonOnApply();
 
         target.statusData.AddStack(StatusEffectType.Poison, amount);
 
@@ -97,7 +97,7 @@ public class StatusEffectController : MonoBehaviour
             Debug.Log("Passive triggered: Reapply Burn 1 after explosion");
             target.statusData.AddStack(StatusEffectType.Burn, 1);
         }
-        int drawAmount = battleManager.GetDrawOnBurnExplosion();
+        int drawAmount = battleManager.relicManager.GetDrawOnBurnExplosion();
         if (drawAmount > 0)
         {
             battleManager.DrawCards(drawAmount);

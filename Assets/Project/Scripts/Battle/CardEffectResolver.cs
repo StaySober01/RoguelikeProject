@@ -11,7 +11,7 @@ public class CardEffectResolver
             switch (effect.effectType)
             {
                 case CardEffectType.DealDamage:
-                    int bonusDamage = battleManager.GetBonusDamageToPoisonAndBurnTarget(battleManager.enemyUnit);
+                    int bonusDamage = battleManager.relicManager.GetBonusDamageToPoisonAndBurnTarget(battleManager.enemyUnit);
                     battleManager.enemyUnit.TakeDamage(effect.amount + bonusDamage);
                     battleManager.TryGainEnergyFromVulnerableRelic(battleManager.enemyUnit);
                     break;

@@ -46,6 +46,7 @@ public class BattleManager : MonoBehaviour
     private List<RelicType> rewardRelicChoices = new();
 
     private RelicEffectCache relicEffectCache = new();
+    public RelicManager relicManager;
 
     [Header("UI - Hand")]
     public Button[] handButtons;
@@ -99,6 +100,7 @@ public class BattleManager : MonoBehaviour
 
     private void Start()
     {
+        relicManager.Initialize(this, statusEffectController);
         baseEnemyHp = enemyUnit.maxHp;
         baseEnemyAttack = enemyUnit.attackPower;
         InitializePermanentDeck();
@@ -179,7 +181,7 @@ public class BattleManager : MonoBehaviour
         currentEnergy = maxEnergy;
         if (isFirstPlayerTurnOfBattle)
         {
-            int bonusEnergy = GetBonusEnergyOnFirstTurn();
+            int bonusEnergy = relicManager.GetBonusEnergyOnFirstTurn();
 
             if (bonusEnergy > 0)
             {
@@ -336,7 +338,7 @@ public class BattleManager : MonoBehaviour
 
         relicPool.RemoveAll(relic => activeRelics.Contains(relic));
 
-        ShuffleRelics(relicPool);
+        relicManager.ShuffleRelics(relicPool);
 
         int rewardCount = Mathf.Min(3, relicPool.Count);
 
@@ -348,7 +350,7 @@ public class BattleManager : MonoBehaviour
 
     public void SelectRelicReward(RelicType relicType)
     {
-        AddRelic(relicType);
+        relicManager.AddRelic(relicType);
         HideRewardUI();
         StartNextBattle();
     }
@@ -571,116 +573,28 @@ public class BattleManager : MonoBehaviour
     #endregion
 
     #region Relic System
-    public void RebuildRelicEffectCache()
-    {
-        relicEffectCache = new RelicEffectCache();
-
-        foreach (RelicType relic in activeRelics)
-        {
-            switch (relic)
-            {
-                case RelicType.VenomSac:
-                    relicEffectCache.bonusPoisonOnApply += 1;
-                    break;
-
-                case RelicType.SmolderingAsh:
-                    relicEffectCache.drawOnBurnExplosion += 1;
-                    break;
-
-                case RelicType.VolatileMixture:
-                    relicEffectCache.bonusDamageToPoisonAndBurnTarget += 2;
-                    break;
-
-                case RelicType.PressurePoint:
-                    relicEffectCache.gainEnergyOnAttackVulnerableTarget += 1;
-                    break;
-
-                case RelicType.OpeningSalvo:
-                    relicEffectCache.damageToEnemyAtTurnStart += 3;
-                    break;
-
-                case RelicType.QuickStart:
-                    relicEffectCache.bonusEnergyOnFirstTurn += 1;
-                    break;
-            }
-        }
-    }
-
-    public void AddRelic(RelicType relicType)
-    {
-        activeRelics.Add(relicType);
-        RebuildRelicEffectCache();
-        Debug.Log($"Relic acquired: {relicType}");
-    }
-
-    private void ShuffleRelics(List<RelicType> relics)
-    {
-        for (int i = 0; i < relics.Count; i++)
-        {
-            RelicType temp = relics[i];
-            int randomIndex = Random.Range(i, relics.Count);
-            relics[i] = relics[randomIndex];
-            relics[randomIndex] = temp;
-        }
-    }
-
-    public int GetBonusPoisonOnApply()
-    {
-        int amount = relicEffectCache.bonusPoisonOnApply;
-
-        if (HasStartPassive(StartPassiveType.PoisonCore))
-            amount += 1;
-
-        return amount;
-    }
-
-    public int GetDrawOnBurnExplosion()
-    {
-        return relicEffectCache.drawOnBurnExplosion;
-    }
-
-    public int GetBonusDamageToPoisonAndBurnTarget(Unit target)
-    {
-        bool hasPoison = statusEffectController.HasStatus(target, StatusEffectType.Poison);
-        bool hasBurn = statusEffectController.HasStatus(target, StatusEffectType.Burn);
-
-        if (hasPoison && hasBurn)
-            return relicEffectCache.bonusDamageToPoisonAndBurnTarget;
-
-        return 0;
-    }
-
-    public int GetGainEnergyOnAttackVulnerableTarget()
-    {
-        return relicEffectCache.gainEnergyOnAttackVulnerableTarget;
-    }
 
     public void TryGainEnergyFromVulnerableRelic(Unit target)
     {
         if (gainedEnergyFromVulnerableRelicThisTurn)
             return;
 
-        if (GetGainEnergyOnAttackVulnerableTarget() <= 0)
+        if (relicManager.GetGainEnergyOnAttackVulnerableTarget() <= 0)
             return;
 
         if (!statusEffectController.HasStatus(target, StatusEffectType.Vulnerable))
             return;
 
-        currentEnergy += GetGainEnergyOnAttackVulnerableTarget();
+        currentEnergy += relicManager.GetGainEnergyOnAttackVulnerableTarget();
         gainedEnergyFromVulnerableRelicThisTurn = true;
 
         Debug.Log("Pressure Point: Attacked Vulnerable target, gain 1 Energy.");
         RefreshUI();
     }
 
-    public int GetDamageToEnemyAtTurnStart()
-    {
-        return relicEffectCache.damageToEnemyAtTurnStart;
-    }
-
     private void TriggerTurnStartRelics()
     {
-        int damage = GetDamageToEnemyAtTurnStart();
+        int damage = relicManager.GetDamageToEnemyAtTurnStart();
 
         if (damage > 0)
         {
@@ -689,12 +603,6 @@ public class BattleManager : MonoBehaviour
             RefreshUI();
         }
     }
-
-    public int GetBonusEnergyOnFirstTurn()
-    {
-        return relicEffectCache.bonusEnergyOnFirstTurn;
-    }
-
     #endregion
 
     #region UI
