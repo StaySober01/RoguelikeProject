@@ -23,18 +23,7 @@ public class Unit : MonoBehaviour
     public void TakeDamage(int damage)
     {
         int remainingDamage = damage;
-        float damageMultiplier = 1f;
-
-        bool hasVulnerable = statusData.Has(StatusEffectType.Vulnerable);
-        bool hasPoison = statusData.Has(StatusEffectType.Poison);
-
-        if (hasVulnerable)
-        {
-            damageMultiplier = hasPoison ? 1.5f : 1.25f;
-        }
-
-        remainingDamage = Mathf.CeilToInt(damage * damageMultiplier);
-
+        
         if (currentBlock > 0)
         {
             int blockedAmount = Mathf.Min(currentBlock, remainingDamage);

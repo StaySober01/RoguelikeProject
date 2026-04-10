@@ -42,10 +42,7 @@ public class BattleManager : MonoBehaviour
     private List<CardInstance> rewardCardChoices = new();
 
     [Header("Relics")]
-    public List<RelicType> activeRelics = new();
     private List<RelicType> rewardRelicChoices = new();
-
-    private RelicEffectCache relicEffectCache = new();
     public RelicManager relicManager;
 
     [Header("UI - Hand")]
@@ -79,7 +76,6 @@ public class BattleManager : MonoBehaviour
     private CardEffectResolver cardEffectResolver = new();
     private int battleWinCount = 0;
     private RewardType currentRewardType;
-    private bool gainedEnergyFromVulnerableRelicThisTurn = false;
     private bool isFirstPlayerTurnOfBattle = true;
 
     #endregion
@@ -96,6 +92,7 @@ public class BattleManager : MonoBehaviour
         }
 
         Instance = this;
+        statusEffectController.Initialize(this);
     }
 
     private void Start()
@@ -193,26 +190,19 @@ public class BattleManager : MonoBehaviour
         InitializeBattleDeck();
         ScaleEnemyForBattle();
         Debug.Log("Battle Start");
+
+        TriggerBattleStartRelics();
+
+        if (CheckBattleEnd())
+            return;
+
         StartPlayerTurn();
     }
 
     public void StartPlayerTurn()
     {
         playerUnit.ResetBlock();
-        gainedEnergyFromVulnerableRelicThisTurn = false;
         currentEnergy = maxEnergy;
-        if (isFirstPlayerTurnOfBattle)
-        {
-            int bonusEnergy = relicManager.GetBonusEnergyOnFirstTurn();
-
-            if (bonusEnergy > 0)
-            {
-                currentEnergy += bonusEnergy;
-                Debug.Log($"Quick Start: Gain {bonusEnergy} bonus Energy on first turn.");
-            }
-
-            isFirstPlayerTurnOfBattle = false;
-        }
         statusEffectController.burnExplosionDamageMultiplier = 1;
 
         SetState(BattleState.PlayerTurn);
@@ -227,6 +217,8 @@ public class BattleManager : MonoBehaviour
 
         Debug.Log($"Player Turn Start - Energy: {currentEnergy}/{maxEnergy}");
         RefreshUI();
+
+        isFirstPlayerTurnOfBattle = false;
     }
 
     public void StartEnemyTurn()
@@ -244,6 +236,12 @@ public class BattleManager : MonoBehaviour
             return;
 
         Debug.Log("Player ends turn");
+
+        TriggerTurnEndRelics();
+
+        if (CheckBattleEnd())
+            return;
+
         RefreshUI();
         StartEnemyTurn();
     }
@@ -284,15 +282,23 @@ public class BattleManager : MonoBehaviour
         UpdateDebugUI();
     }
 
-    public void DealAttackDamage(Unit target, int baseDamage)
+    public void DealDamage(Unit attacker, Unit target, int baseDamage)
     {
-        int bonusDamage = relicManager.GetBonusDamageToPoisonAndBurnTarget(target);
-        int finalDamage = baseDamage + bonusDamage;
+        int damageAfterStatus = statusEffectController.GetDamageWithVulnerable(target, baseDamage);
 
+        RelicContext context = relicManager.CreateContext(attacker, target);
+        context.Set("damage", damageAfterStatus);
+
+        relicManager.Trigger(RelicTriggerType.OnBeforeAttackResolved, context);
+
+        int finalDamage = context.Get<int>("damage");
         target.TakeDamage(finalDamage);
-        TryGainEnergyFromVulnerableRelic(target);
 
-        Debug.Log($"Attack deals {finalDamage} damage. (Base: {baseDamage}, Bonus: {bonusDamage})");
+        Debug.Log($"Attack deals {finalDamage} damage. (Base: {baseDamage})");
+
+        relicManager.Trigger(RelicTriggerType.OnAfterAttackResolved, context);
+
+        RefreshUI();
     }
 
     #endregion
@@ -369,7 +375,7 @@ public class BattleManager : MonoBehaviour
             RelicType.QuickStart
         };
 
-        relicPool.RemoveAll(relic => activeRelics.Contains(relic));
+        relicPool.RemoveAll(relic => relicManager.HasRelic(relic));
 
         relicManager.ShuffleRelics(relicPool);
 
@@ -608,40 +614,34 @@ public class BattleManager : MonoBehaviour
 
     #region Relic System
 
-    public void TryGainEnergyFromVulnerableRelic(Unit target)
+    private void TriggerBattleStartRelics()
     {
-        if (gainedEnergyFromVulnerableRelicThisTurn)
-            return;
-
-        if (relicManager.GetGainEnergyOnAttackVulnerableTarget() <= 0)
-            return;
-
-        if (!statusEffectController.HasStatus(target, StatusEffectType.Vulnerable))
-            return;
-
-        currentEnergy += relicManager.GetGainEnergyOnAttackVulnerableTarget();
-        gainedEnergyFromVulnerableRelicThisTurn = true;
-
-        Debug.Log("Pressure Point: Attacked Vulnerable target, gain 1 Energy.");
+        RelicContext context = relicManager.CreateContext(playerUnit, enemyUnit);
+        relicManager.Trigger(RelicTriggerType.OnBattleStart, context);
         RefreshUI();
     }
 
     private void TriggerTurnStartRelics()
     {
-        int damage = relicManager.GetDamageToEnemyAtTurnStart();
+        RelicContext context = relicManager.CreateContext(playerUnit, enemyUnit);
+        context.Set("isFirstTurn", isFirstPlayerTurnOfBattle);
 
-        if (damage > 0)
-        {
-            enemyUnit.TakeDamage(damage);
-            Debug.Log($"Opening Salvo: Deal {damage} damage to enemy at turn start.");
-            RefreshUI();
-        }
+        relicManager.Trigger(RelicTriggerType.OnTurnStart, context);
+        RefreshUI();
     }
+
+    private void TriggerTurnEndRelics()
+    {
+        RelicContext context = relicManager.CreateContext(playerUnit, enemyUnit);
+        relicManager.Trigger(RelicTriggerType.OnTurnEnd, context);
+        RefreshUI();
+    }
+
     #endregion
 
     #region UI
 
-    private void RefreshUI()
+    public void RefreshUI()
     {
         UpdateHandUI();
 
@@ -789,7 +789,7 @@ public class BattleManager : MonoBehaviour
             playerVulnerable = statusEffectController.GetStack(playerUnit, StatusEffectType.Vulnerable);
             enemyPoison = statusEffectController.GetStack(enemyUnit, StatusEffectType.Poison);
             enemyBurn = statusEffectController.GetStack(enemyUnit, StatusEffectType.Burn);
-            enemyVulnerable = statusEffectController.GetStack(enemyUnit,StatusEffectType.Vulnerable);
+            enemyVulnerable = statusEffectController.GetStack(enemyUnit, StatusEffectType.Vulnerable);
         }
 
         if (playerHpText != null && playerUnit != null)
@@ -821,6 +821,7 @@ public class BattleManager : MonoBehaviour
                 $"State: {state}\n" +
                 $"Draw: {drawPile.Count}  Hand: {hand.Count}  Discard: {discardPile.Count}";
         }
+
         if (battleText != null)
             battleText.text = $"Battle {battleWinCount + 1}";
     }
@@ -837,6 +838,15 @@ public class BattleManager : MonoBehaviour
 
             case RelicType.VolatileMixture:
                 return "Volatile Mixture";
+
+            case RelicType.PressurePoint:
+                return "Pressure Point";
+
+            case RelicType.OpeningSalvo:
+                return "Opening Salvo";
+
+            case RelicType.QuickStart:
+                return "Quick Start";
 
             default:
                 return relicType.ToString();

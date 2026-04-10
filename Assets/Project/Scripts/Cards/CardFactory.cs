@@ -242,8 +242,8 @@ public static class CardFactory
                 },
                 new List<CardTag>
                 {
-                CardTag.Poison,
-                CardTag.Burn
+                    CardTag.Poison,
+                    CardTag.Burn
                 }));
     }
 
@@ -265,7 +265,7 @@ public static class CardFactory
                 },
                 new List<CardTag>
                 {
-                CardTag.Burn
+                    CardTag.Burn
                 }));
     }
 
@@ -315,8 +315,8 @@ public static class CardFactory
                 },
                 new List<CardTag>
                 {
-                CardTag.Poison,
-                CardTag.Damage
+                    CardTag.Poison,
+                    CardTag.Damage
                 }));
     }
 
@@ -339,7 +339,7 @@ public static class CardFactory
                 },
                 new List<CardTag>
                 {
-                CardTag.Poison
+                    CardTag.Poison
                 }));
     }
 
@@ -378,7 +378,7 @@ public static class CardFactory
                 },
                 new List<CardTag>
                 {
-                CardTag.Vulnerable
+                    CardTag.Vulnerable
                 }));
     }
 
@@ -393,20 +393,20 @@ public static class CardFactory
                 "Deal 7 damage. If target is Vulnerable, trigger once more.",
                 new List<ICardEffect>
                 {
-                new StoreHasStatusEffect(
-                    EffectContextKeys.WasVulnerable,
-                    StatusEffectType.Vulnerable),
+                    new StoreHasStatusEffect(
+                        EffectContextKeys.WasVulnerable,
+                        StatusEffectType.Vulnerable),
 
-                new DealDamageEffect(7),
+                    new DealDamageEffect(7),
 
-                new ConditionalEffect(
-                    ctx => ctx.GetTemp<bool>(EffectContextKeys.WasVulnerable),
-                    new DealDamageEffect(7))
+                    new ConditionalEffect(
+                        ctx => ctx.GetTemp<bool>(EffectContextKeys.WasVulnerable),
+                        new DealDamageEffect(7))
                 },
                 new List<CardTag>
                 {
-                CardTag.Vulnerable,
-                CardTag.Damage
+                    CardTag.Vulnerable,
+                    CardTag.Damage
                 }));
     }
 
@@ -426,8 +426,8 @@ public static class CardFactory
                 },
                 new List<CardTag>
                 {
-                CardTag.Block,
-                CardTag.Vulnerable
+                    CardTag.Block,
+                    CardTag.Vulnerable
                 }));
     }
 
@@ -442,21 +442,21 @@ public static class CardFactory
                 "Apply 2 Vulnerable. If target is Poisoned, deal 5 damage.",
                 new List<ICardEffect>
                 {
-                new StoreHasStatusEffect(
-                    EffectContextKeys.WasPoisoned,
-                    StatusEffectType.Poison),
+                    new StoreHasStatusEffect(
+                        EffectContextKeys.WasPoisoned,
+                        StatusEffectType.Poison),
 
-                new ApplyStatusEffect(StatusEffectType.Vulnerable, 2),
+                    new ApplyStatusEffect(StatusEffectType.Vulnerable, 2),
 
-                new ConditionalEffect(
-                    ctx => ctx.GetTemp<bool>(EffectContextKeys.WasPoisoned),
-                    new DealDamageEffect(5))
+                    new ConditionalEffect(
+                        ctx => ctx.GetTemp<bool>(EffectContextKeys.WasPoisoned),
+                        new DealDamageEffect(5))
                 },
                 new List<CardTag>
                 {
-                CardTag.Vulnerable,
-                CardTag.Poison,
-                CardTag.Damage
+                    CardTag.Vulnerable,
+                    CardTag.Poison,
+                    CardTag.Damage
                 }));
     }
 
@@ -471,20 +471,20 @@ public static class CardFactory
                 "Deal 10 damage. If target is Vulnerable, gain 1 Energy.",
                 new List<ICardEffect>
                 {
-                new StoreHasStatusEffect(
-                    EffectContextKeys.WasVulnerable,
-                    StatusEffectType.Vulnerable),
+                    new StoreHasStatusEffect(
+                        EffectContextKeys.WasVulnerable,
+                        StatusEffectType.Vulnerable),
 
-                new DealDamageEffect(10),
+                    new DealDamageEffect(10),
 
-                new ConditionalEffect(
-                    ctx => ctx.GetTemp<bool>(EffectContextKeys.WasVulnerable),
-                    new GainEnergyEffect(1))
+                    new ConditionalEffect(
+                        ctx => ctx.GetTemp<bool>(EffectContextKeys.WasVulnerable),
+                        new GainEnergyEffect(1))
                 },
                 new List<CardTag>
                 {
-                CardTag.Damage,
-                CardTag.Vulnerable
+                    CardTag.Damage,
+                    CardTag.Vulnerable
                 }));
     }
 

@@ -2,88 +2,105 @@ using UnityEngine;
 
 public class StatusEffectController : MonoBehaviour
 {
-    [Header("Status Effect Values")]
-    public int burnExplosionThreshold = 3;
-    public int poisonDamagePerStack = 1;
+    [Header("References")]
+    [SerializeField] private BattleManager battleManager;
+
+    [Header("Burn")]
     public int burnExplosionDamage = 10;
     public int burnExplosionDamageMultiplier = 1;
 
-    private BattleManager battleManager;
-
-    private void Awake()
+    public void Initialize(BattleManager battleManager)
     {
-        battleManager = BattleManager.Instance;
+        this.battleManager = battleManager;
     }
 
     public void ApplyPoison(Unit target, int amount)
     {
-        amount += battleManager.relicManager.GetBonusPoisonOnApply();
+        if (target == null || amount <= 0)
+            return;
 
-        target.statusData.AddStack(StatusEffectType.Poison, amount);
+        int finalAmount = amount;
 
-        Debug.Log($"{target.unitName} gains {amount} Poison. Current Poison: {GetStack(target, StatusEffectType.Poison)}");
+        if (battleManager.HasStartPassive(StartPassiveType.PoisonCore))
+        {
+            finalAmount += 1;
+            Debug.Log("Start Passive triggered: Poison Core (+1 Poison)");
+        }
+
+        target.statusData.AddStack(StatusEffectType.Poison, finalAmount);
+        Debug.Log($"{target.unitName} gains {finalAmount} Poison.");
+
+        battleManager.relicManager.Trigger(
+            RelicTriggerType.OnApplyPoison,
+            battleManager.relicManager.CreateContext(source: null, target: target)
+        );
+
+        battleManager.RefreshUI();
     }
 
     public bool ApplyBurn(Unit target, int amount)
     {
+        if (target == null || amount <= 0)
+            return false;
+
         target.statusData.AddStack(StatusEffectType.Burn, amount);
-        Debug.Log($"{target.unitName} gains {amount} Burn. Current Burn: {GetStack(target, StatusEffectType.Burn)}");
+        Debug.Log($"{target.unitName} gains {amount} Burn.");
 
-        if (HasStatus(target, StatusEffectType.Poison))
+        battleManager.relicManager.Trigger(
+            RelicTriggerType.OnApplyBurn,
+            battleManager.relicManager.CreateContext(source: null, target: target)
+        );
+
+        bool hasPoison = target.statusData.Has(StatusEffectType.Poison);
+        int burnStack = target.statusData.GetStack(StatusEffectType.Burn);
+
+        bool shouldExplode = hasPoison || burnStack >= 3;
+
+        if (shouldExplode)
         {
-            Debug.Log("Synergy triggered: Burn applied to poisoned target -> immediate explosion");
+            string reason = hasPoison && burnStack >= 3
+                ? "Poison + Burn and Burn stack >= 3"
+                : hasPoison
+                    ? "Poison + Burn"
+                    : "Burn stack >= 3";
+
+            Debug.Log($"Synergy triggered: {reason} -> Burn Explosion");
+
             TriggerBurnExplosion(target);
+            battleManager.RefreshUI();
             return true;
         }
 
-        if (GetStack(target, StatusEffectType.Burn) >= burnExplosionThreshold)
-        {
-            TriggerBurnExplosion(target);
-            return true;
-        }
+        battleManager.RefreshUI();
         return false;
     }
 
     public void ApplyVulnerable(Unit target, int amount)
     {
-        if (battleManager.HasStartPassive(StartPassiveType.VulnerableCore))
-        {
-            amount += 1;
-        }
-        target.statusData.AddStack(StatusEffectType.Vulnerable, amount);
-        Debug.Log($"{target.unitName} gains {amount} Vulnerable. Current Vulnerable: {GetStack(target, StatusEffectType.Vulnerable)}");
-    }
-
-    public void ProcessTurnEnd(Unit target)
-    {
-        ProcessPoisonTurnEnd(target);
-        ProcessVulnerableTurnEnd(target);
-    }
-
-    private void ProcessPoisonTurnEnd(Unit target)
-    {
-        int poison = GetStack(target, StatusEffectType.Poison);
-
-        if (poison <= 0)
+        if (target == null || amount <= 0)
             return;
 
-        Debug.Log($"{target.unitName} takes {poison} poison damage at turn end.");
-        target.TakeDamage(poison);
-    }
+        int finalAmount = amount;
 
-    private void ProcessVulnerableTurnEnd(Unit target)
-    {
-        if (GetStack(target, StatusEffectType.Vulnerable) > 0)
+        if (battleManager.HasStartPassive(StartPassiveType.VulnerableCore))
         {
-            target.statusData.ReduceStack(StatusEffectType.Vulnerable, 1);
-            Debug.Log($"{target.unitName}'s Vulnerable decreases by 1.");
+            finalAmount += 1;
+            Debug.Log("Start Passive triggered: Vulnerable Core (+1 Vulnerable)");
         }
+
+        target.statusData.AddStack(StatusEffectType.Vulnerable, finalAmount);
+        Debug.Log($"{target.unitName} gains {finalAmount} Vulnerable.");
+
+        battleManager.RefreshUI();
     }
 
     private void TriggerBurnExplosion(Unit target)
     {
         Debug.Log($"{target.unitName}'s Burn explodes!");
-        target.TakeDamage(burnExplosionDamage * burnExplosionDamageMultiplier);
+
+        int explosionDamage = burnExplosionDamage * burnExplosionDamageMultiplier;
+        target.TakeDamage(explosionDamage);
+
         target.statusData.Clear(StatusEffectType.Burn);
 
         if (target.statusData.Has(StatusEffectType.Poison))
@@ -94,23 +111,81 @@ public class StatusEffectController : MonoBehaviour
 
         if (battleManager.HasStartPassive(StartPassiveType.BurnCore))
         {
-            Debug.Log("Passive triggered: Reapply Burn 1 after explosion");
+            Debug.Log("Start Passive triggered: Reapply Burn 1 after explosion");
             target.statusData.AddStack(StatusEffectType.Burn, 1);
         }
-        int drawAmount = battleManager.relicManager.GetDrawOnBurnExplosion();
-        if (drawAmount > 0)
-        {
-            battleManager.DrawCards(drawAmount);
-        }
+
+        battleManager.relicManager.Trigger(
+            RelicTriggerType.OnBurnExploded,
+            battleManager.relicManager.CreateContext(source: null, target: target)
+        );
     }
 
-    public int GetStack(Unit target, StatusEffectType type)
+    public void ProcessTurnEnd(Unit unit)
     {
-        return target.statusData.GetStack(type);
+        if (unit == null)
+            return;
+
+        ProcessPoison(unit);
+        ProcessVulnerable(unit);
+
+        battleManager.RefreshUI();
     }
 
-    public bool HasStatus(Unit target, StatusEffectType type)
+    private void ProcessPoison(Unit unit)
     {
-        return target.statusData.Has(type);
+        int poison = GetStack(unit, StatusEffectType.Poison);
+
+        if (poison <= 0)
+            return;
+
+        Debug.Log($"{unit.unitName} takes {poison} Poison damage at turn end.");
+        unit.TakeDamage(poison);
+
+        unit.statusData.ReduceStack(StatusEffectType.Poison, 1);
+    }
+
+    private void ProcessVulnerable(Unit unit)
+    {
+        int vulnerable = GetStack(unit, StatusEffectType.Vulnerable);
+
+        if (vulnerable <= 0)
+            return;
+
+        unit.statusData.ReduceStack(StatusEffectType.Vulnerable, 1);
+        Debug.Log($"{unit.unitName}'s Vulnerable decreases by 1.");
+    }
+
+    public bool HasStatus(Unit unit, StatusEffectType type)
+    {
+        if (unit == null)
+            return false;
+
+        return unit.statusData.Has(type);
+    }
+
+    public int GetStack(Unit unit, StatusEffectType type)
+    {
+        if (unit == null)
+            return 0;
+
+        return unit.statusData.GetStack(type);
+    }
+
+    public int GetDamageWithVulnerable(Unit target, int baseDamage)
+    {
+        if (target == null)
+            return baseDamage;
+
+        bool hasVulnerable = HasStatus(target, StatusEffectType.Vulnerable);
+        if (!hasVulnerable)
+            return baseDamage;
+
+        bool hasPoison = HasStatus(target, StatusEffectType.Poison);
+
+        float multiplier = hasPoison ? 1.5f : 1.25f;
+        int finalDamage = Mathf.RoundToInt(baseDamage * multiplier);
+
+        return finalDamage;
     }
 }

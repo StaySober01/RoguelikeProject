@@ -1051,7 +1051,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -1777,9 +1777,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SampleUnit
   unitName: sukyeom
-  maxHp: 25
-  currentHp: 25
-  attackPower: 6
+  maxHp: 1
+  currentHp: 1
+  attackPower: 0
   currentBlock: 0
   selectedStartPassive: 0
   activeRelics: 
@@ -3537,8 +3537,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 159c0ca54ac6ad84a85094b5772265a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StatusEffectController
-  burnExplosionThreshold: 3
-  poisonDamagePerStack: 1
+  battleManager: {fileID: 0}
   burnExplosionDamage: 8
   burnExplosionDamageMultiplier: 1
 --- !u!1 &949938485
@@ -5223,8 +5222,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 159c0ca54ac6ad84a85094b5772265a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StatusEffectController
-  burnExplosionThreshold: 3
-  poisonDamagePerStack: 1
+  battleManager: {fileID: 0}
   burnExplosionDamage: 10
   burnExplosionDamageMultiplier: 1
 --- !u!1 &1992279419

@@ -1,0 +1,21 @@
+public class GainEnergyOnFirstTurnRelicEffect : IRelicEffect
+{
+    private readonly int energyAmount;
+
+    public GainEnergyOnFirstTurnRelicEffect(int energyAmount)
+    {
+        this.energyAmount = energyAmount;
+    }
+
+    public void OnEvent(RelicContext context)
+    {
+        if (context.TriggerType != RelicTriggerType.OnTurnStart)
+            return;
+
+        bool isFirstTurn = context.Get<bool>("isFirstTurn");
+        if (!isFirstTurn)
+            return;
+
+        context.Battle.GainEnergy(energyAmount);
+    }
+}
