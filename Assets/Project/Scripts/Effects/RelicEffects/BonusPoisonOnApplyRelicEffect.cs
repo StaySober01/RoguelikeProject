@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class BonusPoisonOnApplyRelicEffect : IRelicEffect
 {
     private readonly int amount;
@@ -16,6 +18,7 @@ public class BonusPoisonOnApplyRelicEffect : IRelicEffect
             return;
 
         context.Set("isBonusApplied", true);
+        Debug.Log($"[Relic] Venom Sac triggers: +{amount} Poison");
         context.Battle.statusEffectController.ApplyPoison(context.Target, amount);
     }
 }

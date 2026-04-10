@@ -9,12 +9,8 @@ public class FlameAccelerateEffect : ICardEffect
             StatusEffectType.Burn);
 
         if (burnStack <= 0)
-        {
-            Debug.Log("Flame Accelerate: Target has no Burn.");
             return;
-        }
 
         context.Battle.DrawCards(burnStack);
-        Debug.Log($"Flame Accelerate: Draw {burnStack} card(s) equal to target's Burn stacks.");
     }
 }

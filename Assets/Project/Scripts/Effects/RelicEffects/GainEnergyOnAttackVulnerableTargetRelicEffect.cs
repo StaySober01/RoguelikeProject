@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class GainEnergyOnAttackVulnerableTargetRelicEffect : IRelicEffect
 {
     private readonly int energyAmount;
@@ -22,6 +24,7 @@ public class GainEnergyOnAttackVulnerableTargetRelicEffect : IRelicEffect
         if (!hasVulnerable)
             return;
 
+        Debug.Log($"[Relic] Pressure Point triggers: gain {energyAmount} Energy");
         context.Battle.GainEnergy(energyAmount);
     }
 }

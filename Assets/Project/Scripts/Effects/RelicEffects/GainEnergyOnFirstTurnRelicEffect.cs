@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class GainEnergyOnFirstTurnRelicEffect : IRelicEffect
 {
     private readonly int energyAmount;
@@ -16,6 +18,7 @@ public class GainEnergyOnFirstTurnRelicEffect : IRelicEffect
         if (!isFirstTurn)
             return;
 
+        Debug.Log($"[Relic] Quick Start triggers: gain {energyAmount} Energy");
         context.Battle.GainEnergy(energyAmount);
     }
 }

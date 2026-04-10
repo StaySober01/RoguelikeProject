@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class DamageEnemyAtTurnStartRelicEffect : IRelicEffect
 {
     private readonly int damageAmount;
@@ -15,6 +17,7 @@ public class DamageEnemyAtTurnStartRelicEffect : IRelicEffect
         if (context.Target == null)
             return;
 
+        Debug.Log($"[Relic] Opening Salvo triggers: {context.Target.unitName} takes {damageAmount} damage");
         context.Target.TakeDamage(damageAmount);
     }
 }

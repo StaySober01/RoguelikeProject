@@ -18,15 +18,10 @@ public class AfterflareEffect : ICardEffect
             burnAmount);
 
         if (!exploded)
-        {
-            Debug.Log("Afterflare: No explosion occurred.");
             return;
-        }
 
         context.Battle.statusEffectController.ApplyPoison(
             context.Target,
             poisonAmountOnExplosion);
-
-        Debug.Log($"Afterflare: Explosion occurred, apply {poisonAmountOnExplosion} Poison.");
     }
 }

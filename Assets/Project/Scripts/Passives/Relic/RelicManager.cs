@@ -25,7 +25,7 @@ public class RelicManager : MonoBehaviour
         activeRelics.Add(relicType);
         RebuildRelicEffects();
 
-        Debug.Log($"Relic acquired: {relicType}");
+        Debug.Log($"[Relic] Acquired: {relicType}");
     }
 
     public void ShuffleRelics(List<RelicType> relics)

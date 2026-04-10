@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class DrawOnBurnExplosionRelicEffect : IRelicEffect
 {
     private readonly int drawAmount;
@@ -12,6 +14,7 @@ public class DrawOnBurnExplosionRelicEffect : IRelicEffect
         if (context.TriggerType != RelicTriggerType.OnBurnExploded)
             return;
 
+        Debug.Log($"[Relic] Smoldering Ash triggers: draw {drawAmount}");
         context.Battle.DrawCards(drawAmount);
     }
 }

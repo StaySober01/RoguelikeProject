@@ -86,7 +86,7 @@ public class BattleManager : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("Duplicate BattleManager detected. Destroying this instance.");
+            Debug.LogWarning("[Battle] Duplicate BattleManager detected. Destroying this instance.");
             Destroy(gameObject);
             return;
         }
@@ -145,7 +145,7 @@ public class BattleManager : MonoBehaviour
     public void SelectStartPassive(StartPassiveType passive)
     {
         playerUnit.selectedStartPassive = passive;
-        Debug.Log($"Selected Start Passive: {passive}");
+        Debug.Log($"[Battle] Start passive selected: {passive}");
         AddStartPassiveCard(passive);
 
         if (chooseStartPassivePanel != null)
@@ -160,17 +160,14 @@ public class BattleManager : MonoBehaviour
         {
             case StartPassiveType.PoisonCore:
                 deck.Add(CardFactory.CreatePoison());
-                Debug.Log("Start Passive Bonus: Added Poison card to deck.");
                 break;
 
             case StartPassiveType.BurnCore:
                 deck.Add(CardFactory.CreateBurn());
-                Debug.Log("Start Passive Bonus: Added Burn card to deck.");
                 break;
 
             case StartPassiveType.VulnerableCore:
                 deck.Add(CardFactory.CreateVulnerable());
-                Debug.Log("Start Passive Bonus: Added Vulnerable card to deck.");
                 break;
         }
     }
@@ -189,7 +186,7 @@ public class BattleManager : MonoBehaviour
         isFirstPlayerTurnOfBattle = true;
         InitializeBattleDeck();
         ScaleEnemyForBattle();
-        Debug.Log("Battle Start");
+        Debug.Log($"[Battle] Battle {battleWinCount + 1} start");
 
         TriggerBattleStartRelics();
 
@@ -215,7 +212,7 @@ public class BattleManager : MonoBehaviour
         DiscardHand();
         DrawCards(drawCountPerTurn);
 
-        Debug.Log($"Player Turn Start - Energy: {currentEnergy}/{maxEnergy}");
+        Debug.Log($"[Battle] Player turn start - Energy: {currentEnergy}/{maxEnergy}");
         RefreshUI();
 
         isFirstPlayerTurnOfBattle = false;
@@ -224,7 +221,7 @@ public class BattleManager : MonoBehaviour
     public void StartEnemyTurn()
     {
         SetState(BattleState.EnemyTurn);
-        Debug.Log("Enemy Turn Start");
+        Debug.Log("[Battle] Enemy turn start");
         RefreshUI();
 
         StartCoroutine(EnemyTurnRoutine());
@@ -235,7 +232,7 @@ public class BattleManager : MonoBehaviour
         if (state != BattleState.PlayerTurn)
             return;
 
-        Debug.Log("Player ends turn");
+        Debug.Log("[Battle] Player turn end");
 
         TriggerTurnEndRelics();
 
@@ -252,7 +249,7 @@ public class BattleManager : MonoBehaviour
         {
             SetState(BattleState.Win);
             battleWinCount++;
-            Debug.Log("Player Wins!");
+            Debug.Log("[Battle] Victory");
             ShowBattleReward();
             RefreshUI();
             return true;
@@ -261,7 +258,7 @@ public class BattleManager : MonoBehaviour
         if (playerUnit.IsDead())
         {
             SetState(BattleState.Lose);
-            Debug.Log("Player Loses...");
+            Debug.Log("[Battle] Defeat");
             RefreshUI();
             return true;
         }
@@ -294,8 +291,6 @@ public class BattleManager : MonoBehaviour
         int finalDamage = context.Get<int>("damage");
         target.TakeDamage(finalDamage);
 
-        Debug.Log($"Attack deals {finalDamage} damage. (Base: {baseDamage})");
-
         relicManager.Trigger(RelicTriggerType.OnAfterAttackResolved, context);
 
         RefreshUI();
@@ -312,7 +307,7 @@ public class BattleManager : MonoBehaviour
 
         yield return new WaitForSeconds(enemyAttackDelay);
 
-        Debug.Log($"{enemyUnit.unitName} attacks Player");
+        Debug.Log($"[Battle] {enemyUnit.unitName} attacks {playerUnit.unitName}");
         playerUnit.TakeDamage(enemyUnit.attackPower);
         RefreshUI();
 
@@ -329,7 +324,7 @@ public class BattleManager : MonoBehaviour
 
         yield return new WaitForSeconds(actionDelay);
 
-        Debug.Log("Enemy Turn End");
+        Debug.Log("[Battle] Enemy turn end");
         StartPlayerTurn();
     }
 
@@ -355,7 +350,7 @@ public class BattleManager : MonoBehaviour
     public void SelectRewardCard(CardInstance card)
     {
         deck.Add(card);
-        Debug.Log($"{card.CardName} added to permanent deck.");
+        Debug.Log($"[Card] Reward selected: {card.CardName}");
 
         HideRewardUI();
         StartNextBattle();
@@ -412,7 +407,7 @@ public class BattleManager : MonoBehaviour
 
     public void SkipReward()
     {
-        Debug.Log("Player skipped card reward.");
+        Debug.Log("[UI] Reward skipped");
 
         HideRewardUI();
         StartNextBattle();
@@ -471,12 +466,7 @@ public class BattleManager : MonoBehaviour
     private void ReshuffleDiscardIntoDrawPile()
     {
         if (discardPile.Count == 0)
-        {
-            Debug.Log("No cards in discard pile to reshuffle.");
             return;
-        }
-
-        Debug.Log("Reshuffling discard pile into draw pile.");
 
         drawPile.AddRange(discardPile);
         discardPile.Clear();
@@ -488,25 +478,17 @@ public class BattleManager : MonoBehaviour
         for (int i = 0; i < amount; i++)
         {
             if (hand.Count >= maxHandSize)
-            {
-                Debug.Log("Hand is full.");
                 break;
-            }
 
             if (drawPile.Count == 0)
                 ReshuffleDiscardIntoDrawPile();
 
             if (drawPile.Count == 0)
-            {
-                Debug.Log("No cards left to draw.");
                 break;
-            }
 
             CardInstance drawnCard = drawPile[0];
             drawPile.RemoveAt(0);
             hand.Add(drawnCard);
-
-            Debug.Log($"Drew card: {drawnCard.CardName}");
         }
 
         UpdateHandUI();
@@ -519,8 +501,6 @@ public class BattleManager : MonoBehaviour
             UpdateHandUI();
             return;
         }
-
-        Debug.Log($"Discarding {hand.Count} card(s) from hand.");
 
         discardPile.AddRange(hand);
         hand.Clear();
@@ -538,7 +518,7 @@ public class BattleManager : MonoBehaviour
 
         if (currentEnergy < card.Cost)
         {
-            Debug.Log($"Not enough energy to use {card.CardName}");
+            Debug.Log($"[Card] Cannot use {card.CardName} - insufficient energy ({currentEnergy}/{maxEnergy})");
             return;
         }
 
@@ -551,7 +531,7 @@ public class BattleManager : MonoBehaviour
         RefreshUI();
 
         currentEnergy -= card.Cost;
-        Debug.Log($"Player uses {card.CardName} (Cost: {card.Cost}, Energy: {currentEnergy}/{maxEnergy})");
+        Debug.Log($"[Card] Used {card.CardName} (Cost: {card.Cost}, Energy: {currentEnergy}/{maxEnergy})");
 
         hand.Remove(card);
         discardPile.Add(card);
@@ -568,7 +548,6 @@ public class BattleManager : MonoBehaviour
             yield break;
 
         SetState(BattleState.PlayerTurn);
-        Debug.Log($"Player action complete. Remaining Energy: {currentEnergy}/{maxEnergy}");
         RefreshUI();
     }
 
@@ -577,23 +556,16 @@ public class BattleManager : MonoBehaviour
         List<CardInstance> candidates = drawPile.FindAll(card => card.Tags.Contains(tag));
 
         if (candidates.Count == 0)
-        {
-            Debug.Log($"No {tag} cards found in draw pile.");
             return;
-        }
 
         if (hand.Count >= maxHandSize)
-        {
-            Debug.Log("Hand is full. Cannot add searched card.");
             return;
-        }
 
         CardInstance selectedCard = candidates[Random.Range(0, candidates.Count)];
 
         drawPile.Remove(selectedCard);
         hand.Add(selectedCard);
 
-        Debug.Log($"Added {selectedCard.CardName} from draw pile to hand.");
         UpdateHandUI();
         UpdateDebugUI();
     }

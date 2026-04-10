@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public class BonusDamageToPoisonBurnTargetRelicEffect : IRelicEffect
 {
     private readonly int bonusDamage;
@@ -25,5 +27,6 @@ public class BonusDamageToPoisonBurnTargetRelicEffect : IRelicEffect
 
         int damage = context.Get<int>("damage");
         context.Set("damage", damage + bonusDamage);
+        Debug.Log($"[Relic] Volatile Mixture triggers: +{bonusDamage} damage");
     }
 }

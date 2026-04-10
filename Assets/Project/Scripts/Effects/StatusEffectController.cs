@@ -20,15 +20,18 @@ public class StatusEffectController : MonoBehaviour
             return;
 
         int finalAmount = amount;
+        bool triggeredPoisonCore = false;
 
         if (battleManager.HasStartPassive(StartPassiveType.PoisonCore))
         {
             finalAmount += 1;
-            Debug.Log("Start Passive triggered: Poison Core (+1 Poison)");
+            triggeredPoisonCore = true;
         }
 
         target.statusData.AddStack(StatusEffectType.Poison, finalAmount);
-        Debug.Log($"{target.unitName} gains {finalAmount} Poison.");
+        Debug.Log(triggeredPoisonCore
+            ? $"[Status] {target.unitName} gains {finalAmount} Poison (Poison Core +1)"
+            : $"[Status] {target.unitName} gains {finalAmount} Poison");
 
         battleManager.relicManager.Trigger(
             RelicTriggerType.OnApplyPoison,
@@ -44,7 +47,6 @@ public class StatusEffectController : MonoBehaviour
             return false;
 
         target.statusData.AddStack(StatusEffectType.Burn, amount);
-        Debug.Log($"{target.unitName} gains {amount} Burn.");
 
         battleManager.relicManager.Trigger(
             RelicTriggerType.OnApplyBurn,
@@ -64,12 +66,14 @@ public class StatusEffectController : MonoBehaviour
                     ? "Poison + Burn"
                     : "Burn stack >= 3";
 
-            Debug.Log($"Synergy triggered: {reason} -> Burn Explosion");
+            Debug.Log($"[Status] {target.unitName} gains {amount} Burn -> explosion triggered ({reason})");
 
             TriggerBurnExplosion(target);
             battleManager.RefreshUI();
             return true;
         }
+
+        Debug.Log($"[Status] {target.unitName} gains {amount} Burn");
 
         battleManager.RefreshUI();
         return false;
@@ -81,39 +85,49 @@ public class StatusEffectController : MonoBehaviour
             return;
 
         int finalAmount = amount;
+        bool triggeredVulnerableCore = false;
 
         if (battleManager.HasStartPassive(StartPassiveType.VulnerableCore))
         {
             finalAmount += 1;
-            Debug.Log("Start Passive triggered: Vulnerable Core (+1 Vulnerable)");
+            triggeredVulnerableCore = true;
         }
 
         target.statusData.AddStack(StatusEffectType.Vulnerable, finalAmount);
-        Debug.Log($"{target.unitName} gains {finalAmount} Vulnerable.");
+        Debug.Log(triggeredVulnerableCore
+            ? $"[Status] {target.unitName} gains {finalAmount} Vulnerable (Vulnerable Core +1)"
+            : $"[Status] {target.unitName} gains {finalAmount} Vulnerable");
 
         battleManager.RefreshUI();
     }
 
     private void TriggerBurnExplosion(Unit target)
     {
-        Debug.Log($"{target.unitName}'s Burn explodes!");
-
         int explosionDamage = burnExplosionDamage * burnExplosionDamageMultiplier;
         target.TakeDamage(explosionDamage);
 
         target.statusData.Clear(StatusEffectType.Burn);
+        bool removedPoison = false;
 
         if (target.statusData.Has(StatusEffectType.Poison))
         {
-            Debug.Log("Synergy result: Poison removed due to explosion");
             target.statusData.Clear(StatusEffectType.Poison);
+            removedPoison = true;
         }
 
+        bool reappliedBurn = false;
         if (battleManager.HasStartPassive(StartPassiveType.BurnCore))
         {
-            Debug.Log("Start Passive triggered: Reapply Burn 1 after explosion");
             target.statusData.AddStack(StatusEffectType.Burn, 1);
+            reappliedBurn = true;
         }
+
+        string explosionDetails = $"[Status] {target.unitName}'s Burn explodes for {explosionDamage} damage";
+        if (removedPoison)
+            explosionDetails += ", Poison cleared";
+        if (reappliedBurn)
+            explosionDetails += ", Burn Core reapplied Burn 1";
+        Debug.Log(explosionDetails);
 
         battleManager.relicManager.Trigger(
             RelicTriggerType.OnBurnExploded,
@@ -139,7 +153,7 @@ public class StatusEffectController : MonoBehaviour
         if (poison <= 0)
             return;
 
-        Debug.Log($"{unit.unitName} takes {poison} Poison damage at turn end.");
+        Debug.Log($"[Status] {unit.unitName} takes {poison} Poison damage at turn end");
         unit.TakeDamage(poison);
 
         unit.statusData.ReduceStack(StatusEffectType.Poison, 1);
@@ -153,7 +167,6 @@ public class StatusEffectController : MonoBehaviour
             return;
 
         unit.statusData.ReduceStack(StatusEffectType.Vulnerable, 1);
-        Debug.Log($"{unit.unitName}'s Vulnerable decreases by 1.");
     }
 
     public bool HasStatus(Unit unit, StatusEffectType type)

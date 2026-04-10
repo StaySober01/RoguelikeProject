@@ -9,12 +9,8 @@ public class ToxicIgnitionEffect : ICardEffect
             StatusEffectType.Poison);
 
         if (!isPoisoned)
-        {
-            Debug.Log("Toxic Ignition: Target is not Poisoned.");
             return;
-        }
 
         context.Battle.AddRandomCardWithTagFromDrawPileToHand(CardTag.Burn);
-        Debug.Log("Toxic Ignition: Target is Poisoned, add 1 random Burn-tagged card from draw pile to hand.");
     }
 }

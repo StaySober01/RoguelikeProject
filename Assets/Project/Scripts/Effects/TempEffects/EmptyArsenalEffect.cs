@@ -15,12 +15,8 @@ public class EmptyArsenalEffect : ICardEffect
             card => card.Category == CardCategory.Attack);
 
         if (hasAttackCard)
-        {
-            Debug.Log("Empty Arsenal: Attack card exists in hand.");
             return;
-        }
 
         context.Battle.DrawCards(drawAmount);
-        Debug.Log($"Empty Arsenal: No Attack cards in hand, draw {drawAmount}.");
     }
 }

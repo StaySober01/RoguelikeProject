@@ -28,7 +28,7 @@ public class ApplyStatusEffect : ICardEffect
                 break;
 
             default:
-                Debug.LogWarning($"Unhandled status type: {statusType}");
+                Debug.LogWarning($"[Status] Unhandled status type: {statusType}");
                 break;
         }
     }
