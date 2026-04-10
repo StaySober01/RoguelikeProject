@@ -11,9 +11,9 @@ public static class CardFactory
                 CardCategory.Attack,
                 1,
                 "Deal 6 damage.",
-                new List<CardEffectData>
+                new List<ICardEffect>
                 {
-                    new CardEffectData(CardEffectType.DealDamage, 6)
+                    new DealDamageEffect(6)
                 },
                 new List<CardTag>
                 {
@@ -30,9 +30,9 @@ public static class CardFactory
                 CardCategory.Skill,
                 1,
                 "Gain 5 Block.",
-                new List<CardEffectData>
+                new List<ICardEffect>
                 {
-                    new CardEffectData(CardEffectType.GainBlock, 5)
+                    new GainBlockEffect(5)
                 },
                 new List<CardTag>
                 {
@@ -49,9 +49,9 @@ public static class CardFactory
                 CardCategory.Attack,
                 2,
                 "Deal 10 damage.",
-                new List<CardEffectData>
+                new List<ICardEffect>
                 {
-                    new CardEffectData(CardEffectType.DealDamage, 10)
+                    new DealDamageEffect(10)
                 },
                 new List<CardTag>
                 {
@@ -68,9 +68,9 @@ public static class CardFactory
                 CardCategory.Status,
                 1,
                 "Apply 2 Poison.",
-                new List<CardEffectData>
+                new List<ICardEffect>
                 {
-                    new CardEffectData(CardEffectType.ApplyPoison, 2)
+                    new ApplyStatusEffect(StatusEffectType.Poison, 2)
                 },
                 new List<CardTag>
                 {
@@ -87,9 +87,9 @@ public static class CardFactory
                 CardCategory.Status,
                 1,
                 "Apply 1 Burn.",
-                new List<CardEffectData>
+                new List<ICardEffect>
                 {
-                    new CardEffectData(CardEffectType.ApplyBurn, 1)
+                    new ApplyStatusEffect(StatusEffectType.Burn, 1)
                 },
                 new List<CardTag>
                 {
@@ -106,10 +106,10 @@ public static class CardFactory
                 CardCategory.Attack,
                 0,
                 "Deal 2 damage. Draw 1 card.",
-                new List<CardEffectData>
+                new List<ICardEffect>
                 {
-                    new CardEffectData(CardEffectType.DealDamage, 2),
-                    new CardEffectData(CardEffectType.DrawCards, 1)
+                    new DealDamageEffect(2),
+                    new DrawCardsEffect(1)
                 },
                 new List<CardTag>
                 {
@@ -127,10 +127,10 @@ public static class CardFactory
                 CardCategory.Attack,
                 1,
                 "Deal 3 damage. Apply 1 Poison.",
-                new List<CardEffectData>
+                new List<ICardEffect>
                 {
-                    new CardEffectData(CardEffectType.DealDamage, 3),
-                    new CardEffectData(CardEffectType.ApplyPoison, 1)
+                    new DealDamageEffect (3),
+                    new ApplyStatusEffect (StatusEffectType.Poison, 1)
                 },
                 new List<CardTag>
                 {
@@ -148,9 +148,17 @@ public static class CardFactory
                 CardCategory.Attack,
                 1,
                 "Deal 3 damage. If target is Poisoned, gain 4 Block.",
-                new List<CardEffectData>
+                new List<ICardEffect>
                 {
-                    new CardEffectData(CardEffectType.DealDamage, 3)
+                new StoreHasStatusEffect(
+                    EffectContextKeys.WasPoisoned,
+                    StatusEffectType.Poison),
+
+                new DealDamageEffect(3),
+
+                new ConditionalEffect(
+                    ctx => ctx.GetTemp<bool>(EffectContextKeys.WasPoisoned),
+                    new GainBlockEffect(4))
                 },
                 new List<CardTag>
                 {
@@ -168,11 +176,14 @@ public static class CardFactory
                 CardCategory.Skill,
                 1,
                 "If target is Poisoned, add 1 random Burn card from draw pile to your hand.",
-                new List<CardEffectData>(),
+                new List<ICardEffect>
+                {
+                    new ToxicIgnitionEffect()
+                },
                 new List<CardTag>
                 {
-                CardTag.Poison,
-                CardTag.Burn
+                    CardTag.Poison,
+                    CardTag.Burn
                 }));
     }
 
@@ -185,11 +196,14 @@ public static class CardFactory
                 CardCategory.Status,
                 1,
                 "Apply 1 Burn. If an explosion occurred, apply 1 Poison.",
-                new List<CardEffectData>(),
+                new List<ICardEffect>
+                {
+                    new AfterflareEffect(1, 1)
+                },
                 new List<CardTag>
                 {
-                CardTag.Burn,
-                CardTag.Poison
+                    CardTag.Burn,
+                    CardTag.Poison
                 }));
     }
 
@@ -202,10 +216,13 @@ public static class CardFactory
                 CardCategory.Skill,
                 0,
                 "If you have no Attack cards in hand, draw 2 cards.",
-                new List<CardEffectData>(),
+                new List<ICardEffect>
+                {
+                    new EmptyArsenalEffect(2)
+                },
                 new List<CardTag>
                 {
-                CardTag.Draw
+                    CardTag.Draw
                 }));
     }
 
@@ -218,10 +235,10 @@ public static class CardFactory
                 CardCategory.Status,
                 2,
                 "Apply 1 Poison. Apply 1 Burn.",
-                new List<CardEffectData>
+                new List<ICardEffect>
                 {
-                new CardEffectData(CardEffectType.ApplyPoison, 1),
-                new CardEffectData(CardEffectType.ApplyBurn, 1)
+                    new ApplyStatusEffect(StatusEffectType.Poison, 1),
+                    new ApplyStatusEffect(StatusEffectType.Burn, 1)
                 },
                 new List<CardTag>
                 {
@@ -239,7 +256,13 @@ public static class CardFactory
                 CardCategory.Skill,
                 0,
                 "If the enemy has Burn, gain 1 Energy.",
-                new List<CardEffectData>(),
+                new List<ICardEffect>
+                {
+                    new ConditionalEffect(
+                        ctx => ctx.Battle.statusEffectController.HasStatus(
+                            ctx.Target, StatusEffectType.Burn),
+                        new GainEnergyEffect(1))
+                },
                 new List<CardTag>
                 {
                 CardTag.Burn
@@ -255,10 +278,13 @@ public static class CardFactory
                 CardCategory.Skill,
                 0,
                 "Explosion damage is doubled this turn.",
-                new List<CardEffectData>(),
+                new List<ICardEffect>
+                {
+                    new OverclockedFlamesEffect()
+                },
                 new List<CardTag>
                 {
-                CardTag.Burn
+                    CardTag.Burn
                 }));
     }
 
@@ -271,10 +297,26 @@ public static class CardFactory
                 CardCategory.Attack,
                 2,
                 "If target is poisoned, deal twice the amount of poison.",
-                new List<CardEffectData>(),
-                new List<CardTag> {
-                    CardTag.Poison,
-                    CardTag.Damage
+                new List<ICardEffect>
+                {
+                new StoreHasStatusEffect(
+                    EffectContextKeys.WasPoisoned,
+                    StatusEffectType.Poison),
+
+                new ConditionalEffect(
+                    ctx => ctx.GetTemp<bool>(EffectContextKeys.WasPoisoned),
+                    new DealDamageDynamicEffect(ctx =>
+                    {
+                        int poison = ctx.Battle.statusEffectController.GetStack(
+                            ctx.Target, StatusEffectType.Poison);
+
+                        return poison * 2;
+                    }))
+                },
+                new List<CardTag>
+                {
+                CardTag.Poison,
+                CardTag.Damage
                 }));
     }
 
@@ -286,9 +328,17 @@ public static class CardFactory
                 "Toxic Stacking",
                 CardCategory.Skill,
                 2,
-                "Apply 1 Poison. If target is already poisoned, apply 2 additional Poison.",
-                new List<CardEffectData>(),
-                new List<CardTag> {
+                "Apply 2 Poison. If target is already poisoned, apply 2 additional Poison.",
+                new List<ICardEffect>
+                {
+                    new StoreHasStatusEffect(EffectContextKeys.WasPoisoned, StatusEffectType.Poison),
+                    new ApplyStatusEffect(StatusEffectType.Poison, 2),
+                    new ConditionalEffect(
+                        ctx => ctx.GetTemp<bool>(EffectContextKeys.WasPoisoned),
+                        new ApplyStatusEffect(StatusEffectType.Poison, 2))
+                },
+                new List<CardTag>
+                {
                 CardTag.Poison
                 }));
     }
@@ -302,10 +352,14 @@ public static class CardFactory
                 CardCategory.Skill,
                 1,
                 "Draw cards equal to the target's Burn stacks.",
-                new List<CardEffectData>(),
-                new List<CardTag> {
-                CardTag.Burn,
-                CardTag.Draw
+                new List<ICardEffect>
+                {
+                    new FlameAccelerateEffect()
+                },
+                new List<CardTag>
+                {
+                    CardTag.Burn,
+                    CardTag.Draw
                 }));
     }
 
@@ -318,7 +372,10 @@ public static class CardFactory
                 CardCategory.Skill,
                 1,
                 "Apply 2 Vulnerable.",
-                new List<CardEffectData>(),
+                new List<ICardEffect>
+                {
+                    new ApplyStatusEffect(StatusEffectType.Vulnerable, 2)
+                },
                 new List<CardTag>
                 {
                 CardTag.Vulnerable
@@ -334,7 +391,18 @@ public static class CardFactory
                 CardCategory.Attack,
                 1,
                 "Deal 7 damage. If target is Vulnerable, trigger once more.",
-                new List<CardEffectData>(),
+                new List<ICardEffect>
+                {
+                new StoreHasStatusEffect(
+                    EffectContextKeys.WasVulnerable,
+                    StatusEffectType.Vulnerable),
+
+                new DealDamageEffect(7),
+
+                new ConditionalEffect(
+                    ctx => ctx.GetTemp<bool>(EffectContextKeys.WasVulnerable),
+                    new DealDamageEffect(7))
+                },
                 new List<CardTag>
                 {
                 CardTag.Vulnerable,
@@ -351,7 +419,11 @@ public static class CardFactory
                 CardCategory.Skill,
                 1,
                 "Gain 3 Block. Apply 2 Vulnerable.",
-                new List<CardEffectData>(),
+                new List<ICardEffect>
+                {
+                    new GainBlockEffect(3),
+                    new ApplyStatusEffect(StatusEffectType.Vulnerable, 2)
+                },
                 new List<CardTag>
                 {
                 CardTag.Block,
@@ -368,7 +440,18 @@ public static class CardFactory
                 CardCategory.Skill,
                 1,
                 "Apply 2 Vulnerable. If target is Poisoned, deal 5 damage.",
-                new List<CardEffectData>(),
+                new List<ICardEffect>
+                {
+                new StoreHasStatusEffect(
+                    EffectContextKeys.WasPoisoned,
+                    StatusEffectType.Poison),
+
+                new ApplyStatusEffect(StatusEffectType.Vulnerable, 2),
+
+                new ConditionalEffect(
+                    ctx => ctx.GetTemp<bool>(EffectContextKeys.WasPoisoned),
+                    new DealDamageEffect(5))
+                },
                 new List<CardTag>
                 {
                 CardTag.Vulnerable,
@@ -385,12 +468,23 @@ public static class CardFactory
                 "Pressure",
                 CardCategory.Attack,
                 2,
-                "Deal 10 damage. If target is Vulnerable, reduce cost by 1.",
-                new List<CardEffectData>(),
+                "Deal 10 damage. If target is Vulnerable, gain 1 Energy.",
+                new List<ICardEffect>
+                {
+                new StoreHasStatusEffect(
+                    EffectContextKeys.WasVulnerable,
+                    StatusEffectType.Vulnerable),
+
+                new DealDamageEffect(10),
+
+                new ConditionalEffect(
+                    ctx => ctx.GetTemp<bool>(EffectContextKeys.WasVulnerable),
+                    new GainEnergyEffect(1))
+                },
                 new List<CardTag>
                 {
-                CardTag.Vulnerable,
-                CardTag.Damage
+                CardTag.Damage,
+                CardTag.Vulnerable
                 }));
     }
 
@@ -412,8 +506,6 @@ public static class CardFactory
     {
         return new List<CardInstance>
         {
-            CreatePoison(),
-            CreateBurn(),
             CreateQuickStrike(),
             CreateToxicStrike(),
             CreateVenomGuard(),
@@ -425,7 +517,6 @@ public static class CardFactory
             CreateToxicBurst(),
             CreateFlameAccelerate(),
             CreateToxicStacking(),
-            CreateVulnerable(),
             CreateSpotWeakness(),
             CreateTaunt(),
             CreatePoisonicFury(),

@@ -275,7 +275,7 @@ public class BattleManager : MonoBehaviour
     {
         enemyUnit.maxHp = baseEnemyHp + (battleWinCount * 3);
         enemyUnit.currentHp = enemyUnit.maxHp;
-        enemyUnit.attackPower = baseEnemyAttack + battleWinCount;
+        enemyUnit.attackPower = baseEnemyAttack + (battleWinCount / 2);
     }
 
     private void SetState(BattleState newState)
@@ -553,7 +553,8 @@ public class BattleManager : MonoBehaviour
         UpdateHandUI();
         UpdateDebugUI();
 
-        cardEffectResolver.Resolve(this, card);
+        EffectContext context = new EffectContext(this, playerUnit, enemyUnit, card);
+        cardEffectResolver.Resolve(context);
 
         yield return new WaitForSeconds(actionDelay);
 

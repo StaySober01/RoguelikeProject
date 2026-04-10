@@ -9,7 +9,7 @@ public class CardData
     public CardCategory category;
     public int cost;
     public string description;
-    public List<CardEffectData> effects;
+    public List<ICardEffect> effects;
     public List<CardTag> tags;
 
     public CardData(
@@ -18,7 +18,7 @@ public class CardData
         CardCategory category,
         int cost,
         string description,
-        List<CardEffectData> effects,
+        List<ICardEffect> effects,
         List<CardTag> tags = null)
     {
         this.cardId = cardId;
