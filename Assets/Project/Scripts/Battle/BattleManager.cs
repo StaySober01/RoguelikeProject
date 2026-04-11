@@ -78,6 +78,9 @@ public class BattleManager : MonoBehaviour
     private RewardType currentRewardType;
     private bool isFirstPlayerTurnOfBattle = true;
 
+    [SerializeField] private CardDataSO poisonStrikeData;
+    [SerializeField] private CardDatabaseSO cardDatabase;
+
     #endregion
 
     #region Unity Lifecycle
@@ -100,6 +103,8 @@ public class BattleManager : MonoBehaviour
         relicManager.Initialize(this, statusEffectController);
         baseEnemyHp = enemyUnit.maxHp;
         baseEnemyAttack = enemyUnit.attackPower;
+        CardInstance testCard = CardFactory.Create(poisonStrikeData);
+        Debug.Log($"Created card: {testCard.CardName}");
         InitializePermanentDeck();
         ShowStartPassiveSelection();
     }
@@ -336,7 +341,7 @@ public class BattleManager : MonoBehaviour
     {
         rewardCardChoices.Clear();
 
-        List<CardInstance> rewardPool = CardFactory.CreateRewardCardPool();
+        List<CardInstance> rewardPool = cardDatabase.CreateRewardPool();
         ShuffleCards(rewardPool);
 
         int rewardCount = Mathf.Min(3, rewardPool.Count);
@@ -441,7 +446,7 @@ public class BattleManager : MonoBehaviour
 
     private void InitializePermanentDeck()
     {
-        deck = CardFactory.CreateStarterDeck();
+        deck = cardDatabase.CreateStarterDeck();
     }
 
     private void InitializeBattleDeck()

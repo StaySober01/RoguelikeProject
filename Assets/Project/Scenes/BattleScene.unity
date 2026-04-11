@@ -3509,6 +3509,8 @@ MonoBehaviour:
   stateText: {fileID: 730051103}
   battleText: {fileID: 1876757970}
   statusEffectController: {fileID: 1978561907}
+  poisonStrikeData: {fileID: 11400000, guid: 9e40fb099a386734da378debd392d193, type: 2}
+  cardDatabase: {fileID: 11400000, guid: 36f5cf7d5c57f514c9d9c50bd5b1f591, type: 2}
 --- !u!4 &924960897
 Transform:
   m_ObjectHideFlags: 0
