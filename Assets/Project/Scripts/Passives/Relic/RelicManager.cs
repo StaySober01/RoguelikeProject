@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class RelicManager : MonoBehaviour
 {
-    public List<RelicType> activeRelics = new();
+    public List<RelicDataSO> activeRelics = new();
 
     private List<IRelicEffect> runtimeEffects = new();
 
@@ -17,22 +17,28 @@ public class RelicManager : MonoBehaviour
         RebuildRelicEffects();
     }
 
-    public void AddRelic(RelicType relicType)
+    public void AddRelic(RelicDataSO relicData)
     {
-        if (activeRelics.Contains(relicType))
+        if (relicData == null)
+        {
+            Debug.LogError("[Relic] Cannot add null relic data.");
+            return;
+        }
+
+        if (HasRelic(relicData.relicType))
             return;
 
-        activeRelics.Add(relicType);
+        activeRelics.Add(relicData);
         RebuildRelicEffects();
 
-        Debug.Log($"[Relic] Acquired: {relicType}");
+        Debug.Log($"[Relic] Acquired: {relicData.DisplayName}");
     }
 
-    public void ShuffleRelics(List<RelicType> relics)
+    public void ShuffleRelics(List<RelicDataSO> relics)
     {
         for (int i = 0; i < relics.Count; i++)
         {
-            RelicType temp = relics[i];
+            RelicDataSO temp = relics[i];
             int randomIndex = Random.Range(i, relics.Count);
             relics[i] = relics[randomIndex];
             relics[randomIndex] = temp;
@@ -43,33 +49,31 @@ public class RelicManager : MonoBehaviour
     {
         runtimeEffects.Clear();
 
-        foreach (RelicType relic in activeRelics)
+        foreach (RelicDataSO relicData in activeRelics)
         {
-            switch (relic)
+            if (relicData == null)
             {
-                case RelicType.VenomSac:
-                    runtimeEffects.Add(new BonusPoisonOnApplyRelicEffect(1));
-                    break;
+                Debug.LogError("[Relic] Null active relic data found while rebuilding effects.");
+                continue;
+            }
 
-                case RelicType.SmolderingAsh:
-                    runtimeEffects.Add(new DrawOnBurnExplosionRelicEffect(1));
-                    break;
+            foreach (RelicEffectDataSO effectData in relicData.effectDataList)
+            {
+                if (effectData == null)
+                {
+                    Debug.LogError($"[Relic] Null effect data in relic {relicData.DisplayName}");
+                    continue;
+                }
 
-                case RelicType.VolatileMixture:
-                    runtimeEffects.Add(new BonusDamageToPoisonBurnTargetRelicEffect(2));
-                    break;
+                IRelicEffect runtimeEffect = effectData.CreateRuntimeEffect();
 
-                case RelicType.PressurePoint:
-                    runtimeEffects.Add(new GainEnergyOnAttackVulnerableTargetRelicEffect(1));
-                    break;
+                if (runtimeEffect == null)
+                {
+                    Debug.LogError($"[Relic] Failed to create runtime effect from {effectData.name}");
+                    continue;
+                }
 
-                case RelicType.OpeningSalvo:
-                    runtimeEffects.Add(new DamageEnemyAtTurnStartRelicEffect(3));
-                    break;
-
-                case RelicType.QuickStart:
-                    runtimeEffects.Add(new GainEnergyOnFirstTurnRelicEffect(1));
-                    break;
+                runtimeEffects.Add(runtimeEffect);
             }
         }
     }
@@ -96,6 +100,15 @@ public class RelicManager : MonoBehaviour
 
     public bool HasRelic(RelicType relicType)
     {
-        return activeRelics.Contains(relicType);
+        foreach (RelicDataSO relicData in activeRelics)
+        {
+            if (relicData == null)
+                continue;
+
+            if (relicData.relicType == relicType)
+                return true;
+        }
+
+        return false;
     }
 }

@@ -19,6 +19,6 @@ MonoBehaviour:
   category: 0
   tags: 020000000500000001000000
   effectDataList:
-  - {fileID: 11400000, guid: 6180d761ba32aec4dae6f84a1e293c96, type: 2}
   - {fileID: 11400000, guid: 6c6cd4bab8c24384d909001808bd1a37, type: 2}
+  - {fileID: 11400000, guid: 6180d761ba32aec4dae6f84a1e293c96, type: 2}
   - {fileID: 11400000, guid: 92788d049e61ef048b997e13ac2ee8ea, type: 2}

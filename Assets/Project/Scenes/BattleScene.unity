@@ -604,7 +604,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c88aed09e5d52e040bfe4824fc15dd86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RelicManager
-  activeRelics: 
+  activeRelics: []
 --- !u!1 &96101426
 GameObject:
   m_ObjectHideFlags: 0
@@ -3510,6 +3510,7 @@ MonoBehaviour:
   battleText: {fileID: 1876757970}
   statusEffectController: {fileID: 1978561907}
   cardDatabase: {fileID: 11400000, guid: 36f5cf7d5c57f514c9d9c50bd5b1f591, type: 2}
+  relicDatabase: {fileID: 11400000, guid: dc747e0bfdb66f44b992e8987843d5ba, type: 2}
 --- !u!4 &924960897
 Transform:
   m_ObjectHideFlags: 0

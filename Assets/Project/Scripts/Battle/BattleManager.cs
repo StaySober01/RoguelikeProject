@@ -42,7 +42,7 @@ public class BattleManager : MonoBehaviour
     private List<CardInstance> rewardCardChoices = new();
 
     [Header("Relics")]
-    private List<RelicType> rewardRelicChoices = new();
+    private List<RelicDataSO> rewardRelicChoices = new();
     public RelicManager relicManager;
 
     [Header("UI - Hand")]
@@ -79,6 +79,7 @@ public class BattleManager : MonoBehaviour
     private bool isFirstPlayerTurnOfBattle = true;
 
     [SerializeField] private CardDatabaseSO cardDatabase;
+    [SerializeField] private RelicDatabaseSO relicDatabase;
 
     #endregion
 
@@ -365,17 +366,13 @@ public class BattleManager : MonoBehaviour
     {
         rewardRelicChoices.Clear();
 
-        List<RelicType> relicPool = new List<RelicType>
+        if (relicDatabase == null)
         {
-            RelicType.VenomSac,
-            RelicType.SmolderingAsh,
-            RelicType.VolatileMixture,
-            RelicType.PressurePoint,
-            RelicType.OpeningSalvo,
-            RelicType.QuickStart
-        };
+            Debug.LogError("[Battle] RelicDatabase is not assigned.");
+            return;
+        }
 
-        relicPool.RemoveAll(relic => relicManager.HasRelic(relic));
+        List<RelicDataSO> relicPool = relicDatabase.CreateRewardPool(relicManager);
 
         relicManager.ShuffleRelics(relicPool);
 
@@ -387,9 +384,15 @@ public class BattleManager : MonoBehaviour
         }
     }
 
-    public void SelectRelicReward(RelicType relicType)
+    public void SelectRelicReward(RelicDataSO relicData)
     {
-        relicManager.AddRelic(relicType);
+        if (relicData == null)
+        {
+            Debug.LogError("[Battle] Tried to select a null relic reward.");
+            return;
+        }
+
+        relicManager.AddRelic(relicData);
         HideRewardUI();
         StartNextBattle();
     }
@@ -675,10 +678,10 @@ public class BattleManager : MonoBehaviour
         {
             if (i < rewardRelicChoices.Count)
             {
-                RelicType relic = rewardRelicChoices[i];
+                RelicDataSO relic = rewardRelicChoices[i];
 
                 rewardButtons[i].gameObject.SetActive(true);
-                rewardButtonTexts[i].text = GetRelicDisplayName(relic);
+                rewardButtonTexts[i].text = relic.DisplayName;
 
                 rewardButtons[i].onClick.RemoveAllListeners();
                 rewardButtons[i].onClick.AddListener(() => SelectRelicReward(relic));
@@ -801,33 +804,6 @@ public class BattleManager : MonoBehaviour
 
         if (battleText != null)
             battleText.text = $"Battle {battleWinCount + 1}";
-    }
-
-    private string GetRelicDisplayName(RelicType relicType)
-    {
-        switch (relicType)
-        {
-            case RelicType.VenomSac:
-                return "Venom Sac";
-
-            case RelicType.SmolderingAsh:
-                return "Smoldering Ash";
-
-            case RelicType.VolatileMixture:
-                return "Volatile Mixture";
-
-            case RelicType.PressurePoint:
-                return "Pressure Point";
-
-            case RelicType.OpeningSalvo:
-                return "Opening Salvo";
-
-            case RelicType.QuickStart:
-                return "Quick Start";
-
-            default:
-                return relicType.ToString();
-        }
     }
 
     #endregion
