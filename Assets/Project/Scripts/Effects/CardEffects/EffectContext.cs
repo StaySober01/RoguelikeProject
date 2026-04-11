@@ -7,7 +7,7 @@ public class EffectContext
     public Unit Target { get; }
     public CardInstance Card { get; }
 
-    private readonly Dictionary<string, object> tempData = new();
+    public readonly Dictionary<string, object> tempData = new();
 
     public EffectContext(BattleManager battle, Unit source, Unit target, CardInstance card)
     {

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59dcd6b573cbfa449248644904b9877, type: 3}
+  m_Name: Pressure
+  m_EditorClassIdentifier: Assembly-CSharp::CardDataSO
+  cardId: pressure
+  cardName: Pressure
+  description: Deal 10 damage. If target is vulnerable, gain 1 energy.
+  cost: 2
+  category: 0
+  tags: 0500000002000000
+  effectDataList:
+  - {fileID: 11400000, guid: b49781757c38e764dae78c15e45eeaed, type: 2}
+  - {fileID: 11400000, guid: b5ba5c3bbc1287e4d9ae0497c1d5314d, type: 2}
+  - {fileID: 11400000, guid: 409daff7892499540b323d0833d142fc, type: 2}

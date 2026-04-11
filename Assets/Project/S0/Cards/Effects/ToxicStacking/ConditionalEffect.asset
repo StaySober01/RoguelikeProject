@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d23f8c8472b4a18499d2117631093dfc, type: 3}
+  m_Name: ConditionalEffect
+  m_EditorClassIdentifier: Assembly-CSharp::ConditionalEffectDataSO
+  condition: {fileID: 11400000, guid: 2b0203021427d1f4abe87772a40954aa, type: 2}
+  trueEffects:
+  - {fileID: 11400000, guid: b4d6a621bcd96294481c5d0796781beb, type: 2}

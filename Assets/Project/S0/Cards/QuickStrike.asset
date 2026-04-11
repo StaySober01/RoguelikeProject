@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59dcd6b573cbfa449248644904b9877, type: 3}
+  m_Name: QuickStrike
+  m_EditorClassIdentifier: Assembly-CSharp::CardDataSO
+  cardId: quick_strike
+  cardName: Quick Strike
+  description: Deal 2 damage. draw 1 card.
+  cost: 0
+  category: 0
+  tags: 0500000003000000
+  effectDataList:
+  - {fileID: 11400000, guid: 96a5a41bb27864043b16526ca28407ef, type: 2}
+  - {fileID: 11400000, guid: caaf7ec32338fb44a9b1ae5e15d93e3e, type: 2}

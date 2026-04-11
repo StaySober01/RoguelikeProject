@@ -1,19 +1,26 @@
 public class StoreHasStatusEffect : ICardEffect
 {
-    private readonly string key;
-    private readonly StatusEffectType statusType;
+    private StatusEffectType statusType;
+    private string tempKey;
+    private bool checkTarget;
 
-    public StoreHasStatusEffect(string key, StatusEffectType statusType)
+    public StoreHasStatusEffect(
+        StatusEffectType statusType,
+        string tempKey,
+        bool checkTarget)
     {
-        this.key = key;
         this.statusType = statusType;
+        this.tempKey = tempKey;
+        this.checkTarget = checkTarget;
     }
 
     public void Execute(EffectContext context)
     {
-        bool hasStatus = context.Battle.statusEffectController.HasStatus(
-            context.Target, statusType);
+        var unit = checkTarget ? context.Target : context.Source;
 
-        context.SetTemp(key, hasStatus);
+        bool hasStatus = context.Battle.statusEffectController
+            .HasStatus(unit, statusType);
+
+        context.tempData[tempKey] = hasStatus;
     }
 }

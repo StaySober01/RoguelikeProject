@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59dcd6b573cbfa449248644904b9877, type: 3}
+  m_Name: ToxicEmber
+  m_EditorClassIdentifier: Assembly-CSharp::CardDataSO
+  cardId: toxic_ember
+  cardName: Toxic Ember
+  description: Apply 1 poison. Apply 1 burn.
+  cost: 2
+  category: 1
+  tags: 0100000000000000
+  effectDataList:
+  - {fileID: 11400000, guid: 39238300b795b934ea547c06448036a1, type: 2}
+  - {fileID: 11400000, guid: 5f2327cfcb959fe48b58326d9c7b2dde, type: 2}

@@ -1,21 +1,27 @@
 using System;
+using System.Collections.Generic;
 
 public class ConditionalEffect : ICardEffect
 {
-    private readonly Func<EffectContext, bool> condition;
-    private readonly ICardEffect effect;
+    private ConditionDataSO condition;
+    private List<ICardEffect> trueEffects;
 
-    public ConditionalEffect(Func<EffectContext, bool> condition, ICardEffect effect)
+    public ConditionalEffect(
+        ConditionDataSO condition,
+        List<ICardEffect> trueEffects)
     {
         this.condition = condition;
-        this.effect = effect;
+        this.trueEffects = trueEffects;
     }
 
     public void Execute(EffectContext context)
     {
-        if (condition(context))
+        if (condition != null && condition.Evaluate(context))
         {
-            effect.Execute(context);
+            foreach (var effect in trueEffects)
+            {
+                effect.Execute(context);
+            }
         }
     }
 }

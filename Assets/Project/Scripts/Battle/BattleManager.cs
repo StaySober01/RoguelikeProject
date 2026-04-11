@@ -78,7 +78,6 @@ public class BattleManager : MonoBehaviour
     private RewardType currentRewardType;
     private bool isFirstPlayerTurnOfBattle = true;
 
-    [SerializeField] private CardDataSO poisonStrikeData;
     [SerializeField] private CardDatabaseSO cardDatabase;
 
     #endregion
@@ -103,8 +102,6 @@ public class BattleManager : MonoBehaviour
         relicManager.Initialize(this, statusEffectController);
         baseEnemyHp = enemyUnit.maxHp;
         baseEnemyAttack = enemyUnit.attackPower;
-        CardInstance testCard = CardFactory.Create(poisonStrikeData);
-        Debug.Log($"Created card: {testCard.CardName}");
         InitializePermanentDeck();
         ShowStartPassiveSelection();
     }
@@ -161,20 +158,23 @@ public class BattleManager : MonoBehaviour
 
     private void AddStartPassiveCard(StartPassiveType passiveType)
     {
-        switch (passiveType)
+        CardDataSO cardData = cardDatabase.GetStartPassiveCard(passiveType);
+
+        if (cardData == null)
         {
-            case StartPassiveType.PoisonCore:
-                deck.Add(CardFactory.CreatePoison());
-                break;
-
-            case StartPassiveType.BurnCore:
-                deck.Add(CardFactory.CreateBurn());
-                break;
-
-            case StartPassiveType.VulnerableCore:
-                deck.Add(CardFactory.CreateVulnerable());
-                break;
+            Debug.LogError($"[Battle] No start passive card assigned for {passiveType}");
+            return;
         }
+
+        CardInstance card = CardFactory.Create(cardData);
+
+        if (card == null)
+        {
+            Debug.LogError($"[Battle] Failed to create start passive card for {passiveType}");
+            return;
+        }
+
+        deck.Add(card);
     }
 
     public bool HasStartPassive(StartPassiveType startPassiveType)

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59dcd6b573cbfa449248644904b9877, type: 3}
+  m_Name: PoisonicFury
+  m_EditorClassIdentifier: Assembly-CSharp::CardDataSO
+  cardId: poisonic_fury
+  cardName: Poisonic Fury
+  description: Apply 2 Vulnerable. If target is poison, deal 5 damage.
+  cost: 1
+  category: 0
+  tags: 020000000500000001000000
+  effectDataList:
+  - {fileID: 11400000, guid: 6180d761ba32aec4dae6f84a1e293c96, type: 2}
+  - {fileID: 11400000, guid: 6c6cd4bab8c24384d909001808bd1a37, type: 2}
+  - {fileID: 11400000, guid: 92788d049e61ef048b997e13ac2ee8ea, type: 2}

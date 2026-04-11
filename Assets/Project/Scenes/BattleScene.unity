@@ -1777,8 +1777,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SampleUnit
   unitName: sukyeom
-  maxHp: 1000
-  currentHp: 1000
+  maxHp: 100
+  currentHp: 100
   attackPower: 0
   currentBlock: 0
   selectedStartPassive: 0
@@ -3509,7 +3509,6 @@ MonoBehaviour:
   stateText: {fileID: 730051103}
   battleText: {fileID: 1876757970}
   statusEffectController: {fileID: 1978561907}
-  poisonStrikeData: {fileID: 11400000, guid: 9e40fb099a386734da378debd392d193, type: 2}
   cardDatabase: {fileID: 11400000, guid: 36f5cf7d5c57f514c9d9c50bd5b1f591, type: 2}
 --- !u!4 &924960897
 Transform:

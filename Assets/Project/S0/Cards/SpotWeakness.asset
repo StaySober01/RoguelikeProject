@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59dcd6b573cbfa449248644904b9877, type: 3}
+  m_Name: SpotWeakness
+  m_EditorClassIdentifier: Assembly-CSharp::CardDataSO
+  cardId: spot_weakness
+  cardName: Spot Weakness
+  description: 'Deal 7 damage. If target is vulnerable, trigger once more. '
+  cost: 1
+  category: 0
+  tags: 0500000002000000
+  effectDataList:
+  - {fileID: 11400000, guid: c7ba9414ee75c6a43ae58014c9a5828c, type: 2}
+  - {fileID: 11400000, guid: 6aad25b104fd5824f82d7d231d1ee522, type: 2}
+  - {fileID: 11400000, guid: 22465b751a288534ba1bcf731080f830, type: 2}

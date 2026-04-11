@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a59dcd6b573cbfa449248644904b9877, type: 3}
+  m_Name: ToxicStacking
+  m_EditorClassIdentifier: Assembly-CSharp::CardDataSO
+  cardId: toxic_stacking
+  cardName: Toxic Stacking
+  description: Apply 2 poison. If target was poison, Apply 2 additional poison.
+  cost: 2
+  category: 1
+  tags: 01000000
+  effectDataList:
+  - {fileID: 11400000, guid: b4d6a621bcd96294481c5d0796781beb, type: 2}
+  - {fileID: 11400000, guid: 5acf4ffaaba8b084f82fb965b9993280, type: 2}
+  - {fileID: 11400000, guid: fdd43c4de80c9b748a101fd41c546098, type: 2}
