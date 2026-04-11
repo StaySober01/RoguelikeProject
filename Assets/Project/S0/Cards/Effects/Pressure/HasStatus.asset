@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6009576deb87603428554e5c1378e5e5, type: 3}
-  m_Name: Pressure_HasStatus
+  m_Name: HasStatus
   m_EditorClassIdentifier: Assembly-CSharp::StoreHasStatusEffectDataSO
   statusType: 3
   tempKey: targetHasVulnerable

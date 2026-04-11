@@ -10,6 +10,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 862798b1b26e44241a1c0102c2fe98ea, type: 3}
-  m_Name: QuickStrike_DrawCards
+  m_Name: DrawCards
   m_EditorClassIdentifier: Assembly-CSharp::DrawCardsEffectDataSO
   amount: 1

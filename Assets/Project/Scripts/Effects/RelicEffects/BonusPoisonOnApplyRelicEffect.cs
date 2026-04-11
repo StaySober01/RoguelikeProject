@@ -14,11 +14,13 @@ public class BonusPoisonOnApplyRelicEffect : IRelicEffect
         if (context.TriggerType != RelicTriggerType.OnApplyPoison)
             return;
 
-        if (context.Get<bool>("isBonusApplied"))
+        if (context.Target == null)
             return;
 
-        context.Set("isBonusApplied", true);
-        Debug.Log($"[Relic] Venom Sac triggers: +{amount} Poison");
-        context.Battle.statusEffectController.ApplyPoison(context.Target, amount);
+        context.Battle.statusEffectController.ApplyPoison(
+            context.Target,
+            amount,
+            false
+        );
     }
 }

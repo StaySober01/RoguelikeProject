@@ -14,29 +14,27 @@ public class StatusEffectController : MonoBehaviour
         this.battleManager = battleManager;
     }
 
-    public void ApplyPoison(Unit target, int amount)
+    public void ApplyPoison(Unit target, int amount, bool triggerRelicEvent = true)
     {
         if (target == null || amount <= 0)
             return;
 
         int finalAmount = amount;
-        bool triggeredPoisonCore = false;
 
         if (battleManager.HasStartPassive(StartPassiveType.PoisonCore))
         {
             finalAmount += 1;
-            triggeredPoisonCore = true;
         }
 
         target.statusData.AddStack(StatusEffectType.Poison, finalAmount);
-        Debug.Log(triggeredPoisonCore
-            ? $"[Status] {target.unitName} gains {finalAmount} Poison (Poison Core +1)"
-            : $"[Status] {target.unitName} gains {finalAmount} Poison");
 
-        battleManager.relicManager.Trigger(
-            RelicTriggerType.OnApplyPoison,
-            battleManager.relicManager.CreateContext(source: null, target: target)
-        );
+        if (triggerRelicEvent)
+        {
+            battleManager.relicManager.Trigger(
+                RelicTriggerType.OnApplyPoison,
+                battleManager.relicManager.CreateContext(source: null, target: target)
+            );
+        }
 
         battleManager.RefreshUI();
     }

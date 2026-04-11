@@ -10,6 +10,6 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aefe293aab5752c47950ac3bbc02f46c, type: 3}
-  m_Name: Pressure_GainEnergy
+  m_Name: GainEnergy
   m_EditorClassIdentifier: Assembly-CSharp::GainEnergyEffectDataSO
   amount: 1
