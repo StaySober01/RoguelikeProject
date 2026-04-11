@@ -17,6 +17,9 @@ public class GainEnergyOnAttackVulnerableTargetRelicEffect : IRelicEffect
         if (context.Target == null)
             return;
 
+        if (!context.Battle.CanGainPressurePointEnergy())
+            return;
+
         bool hasVulnerable = context.Battle.statusEffectController.HasStatus(
             context.Target,
             StatusEffectType.Vulnerable);
@@ -25,6 +28,8 @@ public class GainEnergyOnAttackVulnerableTargetRelicEffect : IRelicEffect
             return;
 
         Debug.Log($"[Relic] Pressure Point triggers: gain {energyAmount} Energy");
+
         context.Battle.GainEnergy(energyAmount);
+        context.Battle.MarkPressurePointEnergyGained();
     }
 }

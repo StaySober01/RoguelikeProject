@@ -20,6 +20,7 @@ public class BonusPoisonOnApplyRelicEffect : IRelicEffect
         context.Battle.statusEffectController.ApplyPoison(
             context.Target,
             amount,
+            false,
             false
         );
     }

@@ -14,14 +14,18 @@ public class StatusEffectController : MonoBehaviour
         this.battleManager = battleManager;
     }
 
-    public void ApplyPoison(Unit target, int amount, bool triggerRelicEvent = true)
+    public void ApplyPoison(
+        Unit target,
+        int amount,
+        bool triggerRelicEvent = true,
+        bool applyPoisonCoreBonus = true)
     {
         if (target == null || amount <= 0)
             return;
 
         int finalAmount = amount;
 
-        if (battleManager.HasStartPassive(StartPassiveType.PoisonCore))
+        if (applyPoisonCoreBonus && battleManager.HasStartPassive(StartPassiveType.PoisonCore))
         {
             finalAmount += 1;
         }

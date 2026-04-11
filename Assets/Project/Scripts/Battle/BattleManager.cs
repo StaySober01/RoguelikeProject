@@ -77,6 +77,7 @@ public class BattleManager : MonoBehaviour
     private int battleWinCount = 0;
     private RewardType currentRewardType;
     private bool isFirstPlayerTurnOfBattle = true;
+    private bool gainedEnergyFromPressurePointThisTurn = false;
 
     [SerializeField] private CardDatabaseSO cardDatabase;
     [SerializeField] private RelicDatabaseSO relicDatabase;
@@ -207,6 +208,7 @@ public class BattleManager : MonoBehaviour
         playerUnit.ResetBlock();
         currentEnergy = maxEnergy;
         statusEffectController.burnExplosionDamageMultiplier = 1;
+        gainedEnergyFromPressurePointThisTurn = false;
 
         SetState(BattleState.PlayerTurn);
 
@@ -615,6 +617,16 @@ public class BattleManager : MonoBehaviour
         RelicContext context = relicManager.CreateContext(playerUnit, enemyUnit);
         relicManager.Trigger(RelicTriggerType.OnTurnEnd, context);
         RefreshUI();
+    }
+
+    public bool CanGainPressurePointEnergy()
+    {
+        return !gainedEnergyFromPressurePointThisTurn;
+    }
+
+    public void MarkPressurePointEnergyGained()
+    {
+        gainedEnergyFromPressurePointThisTurn = true;
     }
 
     #endregion
