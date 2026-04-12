@@ -151,6 +151,7 @@ Transform:
   - {fileID: 924960897}
   - {fileID: 1978561906}
   - {fileID: 50245193}
+  - {fileID: 1627052570}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &15218008
@@ -3471,43 +3472,44 @@ MonoBehaviour:
   discardPile: []
   deck: []
   relicManager: {fileID: 50245194}
-  handButtons:
+  battleUIManager: {fileID: 1627052571}
+  legacyHandButtons:
   - {fileID: 573521844}
   - {fileID: 257365942}
   - {fileID: 15218010}
   - {fileID: 1431770971}
   - {fileID: 331611652}
-  handButtonTexts:
+  legacyHandButtonTexts:
   - {fileID: 594171023}
   - {fileID: 243742441}
   - {fileID: 472133345}
   - {fileID: 23008892}
   - {fileID: 268694459}
-  endTurnButton: {fileID: 208358209}
-  rewardPanel: {fileID: 1093985568}
-  rewardButtons:
+  legacyEndTurnButton: {fileID: 208358209}
+  legacyRewardPanel: {fileID: 1093985568}
+  legacyRewardButtons:
   - {fileID: 352981201}
   - {fileID: 276198714}
   - {fileID: 990180526}
-  rewardButtonTexts:
+  legacyRewardButtonTexts:
   - {fileID: 154612947}
   - {fileID: 1354794325}
   - {fileID: 33782654}
-  skipRewardButton: {fileID: 1788775514}
-  chooseStartPassivePanel: {fileID: 1992279419}
-  startPassiveButtons:
+  legacySkipRewardButton: {fileID: 1788775514}
+  legacyChooseStartPassivePanel: {fileID: 1992279419}
+  legacyStartPassiveButtons:
   - {fileID: 392357474}
   - {fileID: 246554840}
   - {fileID: 641939218}
-  startPassiveButtonTexts:
+  legacyStartPassiveButtonTexts:
   - {fileID: 1371508357}
   - {fileID: 357394610}
   - {fileID: 1526216725}
-  playerHpText: {fileID: 432419065}
-  enemyHpText: {fileID: 842853015}
-  energyText: {fileID: 1923503684}
-  stateText: {fileID: 730051103}
-  battleText: {fileID: 1876757970}
+  legacyPlayerHpText: {fileID: 432419065}
+  legacyEnemyHpText: {fileID: 842853015}
+  legacyEnergyText: {fileID: 1923503684}
+  legacyStateText: {fileID: 730051103}
+  legacyBattleText: {fileID: 1876757970}
   statusEffectController: {fileID: 1978561907}
   cardDatabase: {fileID: 11400000, guid: 36f5cf7d5c57f514c9d9c50bd5b1f591, type: 2}
   relicDatabase: {fileID: 11400000, guid: dc747e0bfdb66f44b992e8987843d5ba, type: 2}
@@ -4606,6 +4608,87 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &1627052569
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1627052570}
+  - component: {fileID: 1627052571}
+  m_Layer: 0
+  m_Name: BattleUIManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1627052570
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1627052569}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7146363}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1627052571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1627052569}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9fe9820e01343d585c28ef60b5b6273, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleUIManager
+  handButtons:
+  - {fileID: 573521844}
+  - {fileID: 257365942}
+  - {fileID: 15218010}
+  - {fileID: 1431770971}
+  - {fileID: 331611652}
+  handButtonTexts:
+  - {fileID: 594171023}
+  - {fileID: 243742441}
+  - {fileID: 472133345}
+  - {fileID: 23008892}
+  - {fileID: 268694459}
+  endTurnButton: {fileID: 208358209}
+  rewardPanel: {fileID: 1093985568}
+  rewardButtons:
+  - {fileID: 352981201}
+  - {fileID: 276198714}
+  - {fileID: 990180526}
+  rewardButtonTexts:
+  - {fileID: 154612947}
+  - {fileID: 1354794325}
+  - {fileID: 33782654}
+  skipRewardButton: {fileID: 1788775514}
+  chooseStartPassivePanel: {fileID: 1992279419}
+  startPassiveButtons:
+  - {fileID: 392357474}
+  - {fileID: 246554840}
+  - {fileID: 641939218}
+  startPassiveButtonTexts:
+  - {fileID: 1371508357}
+  - {fileID: 357394610}
+  - {fileID: 1526216725}
+  playerHpText: {fileID: 432419065}
+  enemyHpText: {fileID: 842853015}
+  energyText: {fileID: 1923503684}
+  stateText: {fileID: 730051103}
+  battleText: {fileID: 1876757970}
 --- !u!1 &1762978829
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
 
 public class BattleManager : MonoBehaviour
 {
@@ -45,30 +43,8 @@ public class BattleManager : MonoBehaviour
     private List<RelicDataSO> rewardRelicChoices = new();
     public RelicManager relicManager;
 
-    [Header("UI - Hand")]
-    public Button[] handButtons;
-    public TextMeshProUGUI[] handButtonTexts;
-
-    [Header("UI - Turn")]
-    public Button endTurnButton;
-
-    [Header("UI - Reward")]
-    public GameObject rewardPanel;
-    public Button[] rewardButtons;
-    public TextMeshProUGUI[] rewardButtonTexts;
-    public Button skipRewardButton;
-
-    [Header("UI - Start Passive")]
-    public GameObject chooseStartPassivePanel;
-    public Button[] startPassiveButtons;
-    public TextMeshProUGUI[] startPassiveButtonTexts;
-
-    [Header("Debug UI")]
-    public TextMeshProUGUI playerHpText;
-    public TextMeshProUGUI enemyHpText;
-    public TextMeshProUGUI energyText;
-    public TextMeshProUGUI stateText;
-    public TextMeshProUGUI battleText;
+    [Header("UI")]
+    [SerializeField] private BattleUIManager battleUIManager;
 
     [Header("Controllers")]
     public StatusEffectController statusEffectController;
@@ -96,11 +72,13 @@ public class BattleManager : MonoBehaviour
         }
 
         Instance = this;
+        EnsureBattleUIManager();
         statusEffectController.Initialize(this);
     }
 
     private void Start()
     {
+        EnsureBattleUIManager();
         relicManager.Initialize(this, statusEffectController);
         baseEnemyHp = enemyUnit.maxHp;
         baseEnemyAttack = enemyUnit.attackPower;
@@ -114,36 +92,13 @@ public class BattleManager : MonoBehaviour
 
     private void ShowStartPassiveSelection()
     {
-        if (chooseStartPassivePanel != null)
-            chooseStartPassivePanel.SetActive(true);
-
-        if (startPassiveButtons == null || startPassiveButtonTexts == null)
-            return;
-
         StartPassiveType[] choices =
         {
             StartPassiveType.PoisonCore,
             StartPassiveType.BurnCore,
             StartPassiveType.VulnerableCore
         };
-
-        for (int i = 0; i < startPassiveButtons.Length; i++)
-        {
-            if (i < choices.Length)
-            {
-                StartPassiveType passive = choices[i];
-                startPassiveButtons[i].gameObject.SetActive(true);
-                startPassiveButtonTexts[i].text = passive.ToString();
-
-                startPassiveButtons[i].onClick.RemoveAllListeners();
-                startPassiveButtons[i].onClick.AddListener(() => SelectStartPassive(passive));
-            }
-            else
-            {
-                startPassiveButtons[i].onClick.RemoveAllListeners();
-                startPassiveButtons[i].gameObject.SetActive(false);
-            }
-        }
+        battleUIManager?.ShowStartPassiveSelection(choices, SelectStartPassive);
     }
 
     public void SelectStartPassive(StartPassiveType passive)
@@ -152,8 +107,7 @@ public class BattleManager : MonoBehaviour
         Debug.Log($"[Battle] Start passive selected: {passive}");
         AddStartPassiveCard(passive);
 
-        if (chooseStartPassivePanel != null)
-            chooseStartPassivePanel.SetActive(false);
+        battleUIManager?.HideStartPassiveSelection();
 
         StartBattle();
     }
@@ -635,188 +589,66 @@ public class BattleManager : MonoBehaviour
 
     public void RefreshUI()
     {
-        UpdateHandUI();
-
-        if (endTurnButton != null)
-            endTurnButton.interactable = (state == BattleState.PlayerTurn);
-
-        UpdateDebugUI();
+        battleUIManager?.RefreshUI(
+            hand,
+            state,
+            currentEnergy,
+            maxEnergy,
+            drawPile.Count,
+            hand.Count,
+            discardPile.Count,
+            battleWinCount,
+            playerUnit,
+            enemyUnit,
+            statusEffectController,
+            UseCard);
     }
 
     private void ShowCardRewardUI()
     {
-        if (rewardPanel != null)
-            rewardPanel.SetActive(true);
-
-        if (rewardButtons == null || rewardButtonTexts == null)
-            return;
-
-        for (int i = 0; i < rewardButtons.Length; i++)
-        {
-            if (i < rewardCardChoices.Count)
-            {
-                CardInstance card = rewardCardChoices[i];
-
-                rewardButtons[i].gameObject.SetActive(true);
-                rewardButtonTexts[i].text = $"{card.CardName} ({card.Cost})";
-
-                rewardButtons[i].onClick.RemoveAllListeners();
-                rewardButtons[i].onClick.AddListener(() => SelectRewardCard(card));
-            }
-            else
-            {
-                rewardButtons[i].onClick.RemoveAllListeners();
-                rewardButtons[i].gameObject.SetActive(false);
-            }
-        }
-
-        if (skipRewardButton != null)
-        {
-            skipRewardButton.gameObject.SetActive(true);
-            skipRewardButton.onClick.RemoveAllListeners();
-            skipRewardButton.onClick.AddListener(SkipReward);
-        }
+        battleUIManager?.ShowCardRewardUI(rewardCardChoices, SelectRewardCard, SkipReward);
     }
 
     private void ShowRelicRewardUI()
     {
-        if (rewardPanel != null)
-            rewardPanel.SetActive(true);
-
-        if (rewardButtons == null || rewardButtonTexts == null)
-            return;
-
-        for (int i = 0; i < rewardButtons.Length; i++)
-        {
-            if (i < rewardRelicChoices.Count)
-            {
-                RelicDataSO relic = rewardRelicChoices[i];
-
-                rewardButtons[i].gameObject.SetActive(true);
-                rewardButtonTexts[i].text = relic.DisplayName;
-
-                rewardButtons[i].onClick.RemoveAllListeners();
-                rewardButtons[i].onClick.AddListener(() => SelectRelicReward(relic));
-            }
-            else
-            {
-                rewardButtons[i].onClick.RemoveAllListeners();
-                rewardButtons[i].gameObject.SetActive(false);
-            }
-        }
-
-        if (skipRewardButton != null)
-        {
-            skipRewardButton.gameObject.SetActive(true);
-            skipRewardButton.onClick.RemoveAllListeners();
-            skipRewardButton.onClick.AddListener(SkipReward);
-        }
+        battleUIManager?.ShowRelicRewardUI(rewardRelicChoices, SelectRelicReward, SkipReward);
     }
 
     private void HideRewardUI()
     {
         rewardCardChoices.Clear();
         rewardRelicChoices.Clear();
-
-        if (rewardPanel != null)
-            rewardPanel.SetActive(false);
-
-        if (rewardButtons != null)
-        {
-            for (int i = 0; i < rewardButtons.Length; i++)
-            {
-                rewardButtons[i].onClick.RemoveAllListeners();
-            }
-        }
-
-        if (skipRewardButton != null)
-        {
-            skipRewardButton.onClick.RemoveAllListeners();
-            skipRewardButton.gameObject.SetActive(false);
-        }
+        battleUIManager?.HideRewardUI();
     }
 
     private void UpdateHandUI()
     {
-        if (handButtons == null || handButtonTexts == null)
-            return;
-
-        for (int i = 0; i < handButtons.Length; i++)
-        {
-            if (i < hand.Count)
-            {
-                CardInstance card = hand[i];
-
-                handButtons[i].gameObject.SetActive(true);
-                handButtonTexts[i].text = $"{card.CardName} ({card.Cost})";
-
-                handButtons[i].onClick.RemoveAllListeners();
-                handButtons[i].onClick.AddListener(() => UseCard(card));
-
-                handButtons[i].interactable =
-                    state == BattleState.PlayerTurn &&
-                    currentEnergy >= card.Cost;
-            }
-            else
-            {
-                handButtons[i].onClick.RemoveAllListeners();
-                handButtons[i].gameObject.SetActive(false);
-            }
-        }
+        battleUIManager?.UpdateHandUI(hand, state, currentEnergy, UseCard);
     }
 
     private void UpdateDebugUI()
     {
-        int playerPoison = 0;
-        int playerBurn = 0;
-        int playerVulnerable = 0;
-        int enemyPoison = 0;
-        int enemyBurn = 0;
-        int enemyVulnerable = 0;
-
-        if (statusEffectController != null && playerUnit != null && enemyUnit != null)
-        {
-            playerPoison = statusEffectController.GetStack(playerUnit, StatusEffectType.Poison);
-            playerBurn = statusEffectController.GetStack(playerUnit, StatusEffectType.Burn);
-            playerVulnerable = statusEffectController.GetStack(playerUnit, StatusEffectType.Vulnerable);
-            enemyPoison = statusEffectController.GetStack(enemyUnit, StatusEffectType.Poison);
-            enemyBurn = statusEffectController.GetStack(enemyUnit, StatusEffectType.Burn);
-            enemyVulnerable = statusEffectController.GetStack(enemyUnit, StatusEffectType.Vulnerable);
-        }
-
-        if (playerHpText != null && playerUnit != null)
-        {
-            playerHpText.text =
-                $"Player HP: {playerUnit.currentHp}/{playerUnit.maxHp}  " +
-                $"Block: {playerUnit.currentBlock}  " +
-                $"Poison: {playerPoison}  " +
-                $"Burn: {playerBurn}  " +
-                $"Vulerable: {playerVulnerable}";
-        }
-
-        if (enemyHpText != null && enemyUnit != null)
-        {
-            enemyHpText.text =
-                $"Enemy HP: {enemyUnit.currentHp}/{enemyUnit.maxHp}  " +
-                $"Block: {enemyUnit.currentBlock}  " +
-                $"Poison: {enemyPoison}  " +
-                $"Burn: {enemyBurn}  " +
-                $"Vulerable: {enemyVulnerable}";
-        }
-
-        if (energyText != null)
-            energyText.text = $"Energy: {currentEnergy}/{maxEnergy}";
-
-        if (stateText != null)
-        {
-            stateText.text =
-                $"State: {state}\n" +
-                $"Draw: {drawPile.Count}  Hand: {hand.Count}  Discard: {discardPile.Count}";
-        }
-
-        if (battleText != null)
-            battleText.text = $"Battle {battleWinCount + 1}";
+        battleUIManager?.UpdateDebugUI(
+            state,
+            currentEnergy,
+            maxEnergy,
+            drawPile.Count,
+            hand.Count,
+            discardPile.Count,
+            battleWinCount,
+            playerUnit,
+            enemyUnit,
+            statusEffectController);
     }
 
     #endregion
+
+    private void EnsureBattleUIManager()
+    {
+        if (battleUIManager == null)
+            battleUIManager = GetComponent<BattleUIManager>();
+
+        if (battleUIManager == null)
+            battleUIManager = gameObject.AddComponent<BattleUIManager>();
+    }
 }

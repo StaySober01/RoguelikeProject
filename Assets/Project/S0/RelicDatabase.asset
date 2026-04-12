@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RelicDatabaseSO
   rewardPoolRelics:
   - {fileID: 11400000, guid: 360271105baae7747996556f3045b49d, type: 2}
-  - {fileID: 11400000, guid: 506410b968b15b0488d34ca0de06cb4a, type: 2}
-  - {fileID: 11400000, guid: f0c4b536a12cf6b42a77e2fb768c2c8c, type: 2}
-  - {fileID: 11400000, guid: 826171830e7a8144d91d6a55171e7311, type: 2}
   - {fileID: 11400000, guid: 9f6482583c14cb0469c0073ff1277c0a, type: 2}
   - {fileID: 11400000, guid: c64f68173d63f0a47b2421282ab78287, type: 2}
+  - {fileID: 11400000, guid: 826171830e7a8144d91d6a55171e7311, type: 2}
+  - {fileID: 11400000, guid: f0c4b536a12cf6b42a77e2fb768c2c8c, type: 2}
+  - {fileID: 11400000, guid: 506410b968b15b0488d34ca0de06cb4a, type: 2}
