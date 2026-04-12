@@ -9,6 +9,7 @@ public class BattleUIManager : MonoBehaviour
     [Header("Hand UI")]
     [SerializeField] private Button[] handButtons;
     [SerializeField] private TextMeshProUGUI[] handButtonTexts;
+    [SerializeField] private CardTooltipUI cardTooltipUI;
 
     [Header("Turn UI")]
     [SerializeField] private Button endTurnButton;
@@ -61,10 +62,10 @@ public class BattleUIManager : MonoBehaviour
     }
 
     public void UpdateHandUI(
-        IReadOnlyList<CardInstance> hand,
-        BattleState state,
-        int currentEnergy,
-        Action<CardInstance> onUseCard)
+    IReadOnlyList<CardInstance> hand,
+    BattleState state,
+    int currentEnergy,
+    Action<CardInstance> onUseCard)
     {
         if (handButtons == null || handButtonTexts == null)
             return;
@@ -86,10 +87,25 @@ public class BattleUIManager : MonoBehaviour
                 handButtons[i].interactable =
                     state == BattleState.PlayerTurn &&
                     currentEnergy >= card.Cost;
+
+                CardHoverHandler hoverHandler = handButtons[i].GetComponent<CardHoverHandler>();
+                if (hoverHandler == null)
+                {
+                    hoverHandler = handButtons[i].gameObject.AddComponent<CardHoverHandler>();
+                }
+
+                hoverHandler.Initialize(card, cardTooltipUI);
             }
             else
             {
                 handButtons[i].onClick.RemoveAllListeners();
+
+                CardHoverHandler hoverHandler = handButtons[i].GetComponent<CardHoverHandler>();
+                if (hoverHandler != null)
+                {
+                    hoverHandler.Clear();
+                }
+
                 handButtons[i].gameObject.SetActive(false);
             }
         }
