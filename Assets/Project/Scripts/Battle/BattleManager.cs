@@ -148,6 +148,8 @@ public class BattleManager : MonoBehaviour
         InitializeBattleDeck();
         ScaleEnemyForBattle();
         Debug.Log($"[Battle] Battle {battleWinCount + 1} start");
+        //ClearBattleLogs();
+        AddBattleLog($"Battle {battleWinCount + 1} start");
 
         TriggerBattleStartRelics();
 
@@ -165,6 +167,8 @@ public class BattleManager : MonoBehaviour
         gainedEnergyFromPressurePointThisTurn = false;
 
         SetState(BattleState.PlayerTurn);
+
+        AddBattleLog("Player Turn Start");
 
         TriggerTurnStartRelics();
 
@@ -184,6 +188,7 @@ public class BattleManager : MonoBehaviour
     {
         SetState(BattleState.EnemyTurn);
         Debug.Log("[Battle] Enemy turn start");
+        AddBattleLog("Enemy Turn Start");
         RefreshUI();
 
         StartCoroutine(EnemyTurnRoutine());
@@ -195,6 +200,8 @@ public class BattleManager : MonoBehaviour
             return;
 
         Debug.Log("[Battle] Player turn end");
+
+        AddBattleLog("Turn End");
 
         TriggerTurnEndRelics();
 
@@ -212,6 +219,7 @@ public class BattleManager : MonoBehaviour
             SetState(BattleState.Win);
             battleWinCount++;
             Debug.Log("[Battle] Victory");
+            AddBattleLog("Victory");
             ShowBattleReward();
             RefreshUI();
             return true;
@@ -221,6 +229,7 @@ public class BattleManager : MonoBehaviour
         {
             SetState(BattleState.Lose);
             Debug.Log("[Battle] Defeat");
+            AddBattleLog("Defeat");
             RefreshUI();
             return true;
         }
@@ -313,6 +322,7 @@ public class BattleManager : MonoBehaviour
     {
         deck.Add(card);
         Debug.Log($"[Card] Reward selected: {card.CardName}");
+        AddBattleLog($"Card reward selected: {card.CardName}");
 
         HideRewardUI();
         StartNextBattle();
@@ -349,6 +359,7 @@ public class BattleManager : MonoBehaviour
         }
 
         relicManager.AddRelic(relicData);
+        AddBattleLog($"Relic reward selected: {relicData.DisplayName}");
         HideRewardUI();
         StartNextBattle();
     }
@@ -496,6 +507,7 @@ public class BattleManager : MonoBehaviour
 
         currentEnergy -= card.Cost;
         Debug.Log($"[Card] Used {card.CardName} (Cost: {card.Cost}, Energy: {currentEnergy}/{maxEnergy})");
+        AddBattleLog($"{card.CardName} used");
 
         hand.Remove(card);
         discardPile.Add(card);
@@ -639,6 +651,16 @@ public class BattleManager : MonoBehaviour
             playerUnit,
             enemyUnit,
             statusEffectController);
+    }
+
+    private void AddBattleLog(string message)
+    {
+        battleUIManager?.AddBattleLog(message);
+    }
+
+    private void ClearBattleLogs()
+    {
+        battleUIManager?.ClearBattleLogs();
     }
 
     #endregion

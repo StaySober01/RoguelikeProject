@@ -32,6 +32,9 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI stateText;
     [SerializeField] private TextMeshProUGUI battleText;
 
+    [Header("Battle Log UI")]
+    [SerializeField] private BattleLogUI battleLogUI;
+
     public void RefreshUI(
         IReadOnlyList<CardInstance> hand,
         BattleState state,
@@ -315,5 +318,21 @@ public class BattleUIManager : MonoBehaviour
 
         if (onSkipReward != null)
             skipRewardButton.onClick.AddListener(() => onSkipReward());
+    }
+
+    public void AddBattleLog(string message)
+    {
+        if (battleLogUI == null)
+            return;
+
+        battleLogUI.AddLog(message);
+    }
+
+    public void ClearBattleLogs()
+    {
+        if (battleLogUI == null)
+            return;
+
+        battleLogUI.ClearLogs();
     }
 }
