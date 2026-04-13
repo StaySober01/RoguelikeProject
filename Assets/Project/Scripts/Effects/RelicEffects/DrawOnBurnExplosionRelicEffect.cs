@@ -15,6 +15,7 @@ public class DrawOnBurnExplosionRelicEffect : IRelicEffect
             return;
 
         Debug.Log($"[Relic] Smoldering Ash triggers: draw {drawAmount}");
+        context.Battle.AddBattleLog($"Smoldering Ash draws {drawAmount} card{(drawAmount == 1 ? string.Empty : "s")}");
         context.Battle.DrawCards(drawAmount);
     }
 }

@@ -31,6 +31,8 @@ public class StatusEffectController : MonoBehaviour
         }
 
         target.statusData.AddStack(StatusEffectType.Poison, finalAmount);
+        if (triggerRelicEvent || applyPoisonCoreBonus)
+            battleManager.AddBattleLog($"{battleManager.GetBattleLogUnitName(target)} gains {finalAmount} Poison");
 
         if (triggerRelicEvent)
         {
@@ -49,6 +51,7 @@ public class StatusEffectController : MonoBehaviour
             return false;
 
         target.statusData.AddStack(StatusEffectType.Burn, amount);
+        battleManager.AddBattleLog($"{battleManager.GetBattleLogUnitName(target)} gains {amount} Burn");
 
         battleManager.relicManager.Trigger(
             RelicTriggerType.OnApplyBurn,
@@ -99,6 +102,7 @@ public class StatusEffectController : MonoBehaviour
         Debug.Log(triggeredVulnerableCore
             ? $"[Status] {target.unitName} gains {finalAmount} Vulnerable (Vulnerable Core +1)"
             : $"[Status] {target.unitName} gains {finalAmount} Vulnerable");
+        battleManager.AddBattleLog($"{battleManager.GetBattleLogUnitName(target)} gains {finalAmount} Vulnerable");
 
         battleManager.RefreshUI();
     }
@@ -130,6 +134,7 @@ public class StatusEffectController : MonoBehaviour
         if (reappliedBurn)
             explosionDetails += ", Burn Core reapplied Burn 1";
         Debug.Log(explosionDetails);
+        battleManager.AddBattleLog($"{battleManager.GetBattleLogUnitName(target)} Burn explodes for {explosionDamage}");
 
         battleManager.relicManager.Trigger(
             RelicTriggerType.OnBurnExploded,
@@ -156,6 +161,7 @@ public class StatusEffectController : MonoBehaviour
             return;
 
         Debug.Log($"[Status] {unit.unitName} takes {poison} Poison damage at turn end");
+        battleManager.AddBattleLog($"{battleManager.GetBattleLogUnitName(unit)} takes {poison} Poison damage");
         unit.TakeDamage(poison);
 
         unit.statusData.ReduceStack(StatusEffectType.Poison, 1);

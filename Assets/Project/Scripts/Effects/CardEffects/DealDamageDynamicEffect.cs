@@ -15,6 +15,9 @@ public class DealDamageDynamicEffect : ICardEffect
         int damage = damageFunc(context);
 
         if (damage > 0)
+        {
             context.Battle.DealDamage(context.Source, context.Target, damage);
+            context.Battle.AddBattleLog($"Deal {damage} damage");
+        }
     }
 }

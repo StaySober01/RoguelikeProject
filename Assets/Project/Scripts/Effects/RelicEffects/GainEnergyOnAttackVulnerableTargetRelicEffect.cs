@@ -28,6 +28,7 @@ public class GainEnergyOnAttackVulnerableTargetRelicEffect : IRelicEffect
             return;
 
         Debug.Log($"[Relic] Pressure Point triggers: gain {energyAmount} Energy");
+        context.Battle.AddBattleLog($"Pressure Point grants {energyAmount} Energy");
 
         context.Battle.GainEnergy(energyAmount);
         context.Battle.MarkPressurePointEnergyGained();

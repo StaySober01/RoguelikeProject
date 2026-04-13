@@ -10,5 +10,6 @@ public class DealDamageEffect : ICardEffect
     public void Execute(EffectContext context)
     {
         context.Battle.DealDamage(context.Source, context.Target, amount);
+        context.Battle.AddBattleLog($"Deal {amount} damage");
     }
 }

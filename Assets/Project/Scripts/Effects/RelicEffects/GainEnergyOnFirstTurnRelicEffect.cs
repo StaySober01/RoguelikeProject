@@ -19,6 +19,7 @@ public class GainEnergyOnFirstTurnRelicEffect : IRelicEffect
             return;
 
         Debug.Log($"[Relic] Quick Start triggers: gain {energyAmount} Energy");
+        context.Battle.AddBattleLog($"Quick Start grants {energyAmount} Energy");
         context.Battle.GainEnergy(energyAmount);
     }
 }

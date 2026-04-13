@@ -10,5 +10,6 @@ public class DrawCardsEffect : ICardEffect
     public void Execute(EffectContext context)
     {
         context.Battle.DrawCards(amount);
+        context.Battle.AddBattleLog($"Draw {amount} card{(amount == 1 ? string.Empty : "s")}");
     }
 }

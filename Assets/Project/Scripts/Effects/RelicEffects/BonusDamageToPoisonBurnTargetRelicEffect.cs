@@ -28,5 +28,6 @@ public class BonusDamageToPoisonBurnTargetRelicEffect : IRelicEffect
         int damage = context.Get<int>("damage");
         context.Set("damage", damage + bonusDamage);
         Debug.Log($"[Relic] Volatile Mixture triggers: +{bonusDamage} damage");
+        context.Battle.AddBattleLog($"Volatile Mixture adds {bonusDamage} damage");
     }
 }

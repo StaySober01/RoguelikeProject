@@ -10,5 +10,6 @@ public class GainEnergyEffect : ICardEffect
     public void Execute(EffectContext context)
     {
         context.Battle.GainEnergy(amount);
+        context.Battle.AddBattleLog($"Gain {amount} Energy");
     }
 }

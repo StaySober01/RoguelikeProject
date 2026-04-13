@@ -17,6 +17,7 @@ public class BonusPoisonOnApplyRelicEffect : IRelicEffect
         if (context.Target == null)
             return;
 
+        context.Battle.AddBattleLog($"Toxic Flask adds {amount} Poison");
         context.Battle.statusEffectController.ApplyPoison(
             context.Target,
             amount,

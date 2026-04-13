@@ -19,5 +19,6 @@ public class DamageEnemyAtTurnStartRelicEffect : IRelicEffect
 
         Debug.Log($"[Relic] Opening Salvo triggers: {context.Target.unitName} takes {damageAmount} damage");
         context.Target.TakeDamage(damageAmount);
+        context.Battle.AddBattleLog($"Opening Salvo deals {damageAmount} damage");
     }
 }

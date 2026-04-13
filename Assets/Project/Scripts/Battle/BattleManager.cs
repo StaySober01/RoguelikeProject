@@ -653,14 +653,28 @@ public class BattleManager : MonoBehaviour
             statusEffectController);
     }
 
-    private void AddBattleLog(string message)
+    public void AddBattleLog(string message)
     {
         battleUIManager?.AddBattleLog(message);
     }
 
-    private void ClearBattleLogs()
+    public void ClearBattleLogs()
     {
         battleUIManager?.ClearBattleLogs();
+    }
+
+    public string GetBattleLogUnitName(Unit unit)
+    {
+        if (unit == null)
+            return "Target";
+
+        if (unit == playerUnit)
+            return "Player";
+
+        if (unit == enemyUnit)
+            return "Enemy";
+
+        return string.IsNullOrWhiteSpace(unit.unitName) ? "Target" : unit.unitName;
     }
 
     #endregion
