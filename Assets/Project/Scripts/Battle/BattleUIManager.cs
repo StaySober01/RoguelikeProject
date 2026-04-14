@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
+using System.Text;
 
 public class BattleUIManager : MonoBehaviour
 {
@@ -34,6 +36,27 @@ public class BattleUIManager : MonoBehaviour
 
     [Header("Battle Log UI")]
     [SerializeField] private BattleLogUI battleLogUI;
+
+    [Header("Detail Popup UI")]
+    [SerializeField] private DetailPopupUI detailPopupUI;
+    [SerializeField] private Button deckButton;
+    [SerializeField] private Button drawPileButton;
+    [SerializeField] private Button discardButton;
+
+    private BattleManager battleManager;
+
+    private void Start()
+    {
+        battleManager = BattleManager.Instance;
+        if (deckButton != null)
+            deckButton.onClick.AddListener(OnClickDeck);
+
+        if (drawPileButton != null)
+            drawPileButton.onClick.AddListener(OnClickDrawPile);
+
+        if (discardButton != null)
+            discardButton.onClick.AddListener(OnClickDiscard);
+    }
 
     public void RefreshUI(
         IReadOnlyList<CardInstance> hand,
@@ -334,5 +357,67 @@ public class BattleUIManager : MonoBehaviour
             return;
 
         battleLogUI.ClearLogs();
+    }
+
+    public void ShowCardListPopup(string title, IReadOnlyList<CardInstance> cards)
+    {
+        if (detailPopupUI == null)
+            return;
+
+        StringBuilder sb = new StringBuilder();
+
+        if (cards == null || cards.Count == 0)
+        {
+            sb.Append("Empty");
+        }
+        else
+        {
+            foreach (var card in cards)
+            {
+                sb.AppendLine($"- {card.CardName} ({card.Cost})");
+            }
+        }
+
+        detailPopupUI.Show(title, sb.ToString());
+    }
+
+    public void ShowRelicListPopup(string title, IReadOnlyList<RelicDataSO> relics)
+    {
+        if (detailPopupUI == null)
+            return;
+
+        StringBuilder sb = new StringBuilder();
+
+        if (relics == null || relics.Count == 0)
+        {
+            sb.Append("None");
+        }
+        else
+        {
+            foreach (var relic in relics)
+            {
+                sb.AppendLine($"- {relic.DisplayName}");
+            }
+        }
+
+        detailPopupUI.Show(title, sb.ToString());
+    }
+
+    private void OnClickDeck()
+    {
+        var deck = battleManager.GetCurrentDeck();
+        ShowCardListPopup("Current Deck", deck);
+    }
+
+    private void OnClickDrawPile()
+    {
+        var drawPile = battleManager.GetDrawPile();
+        ShowCardListPopup("Draw Pile", drawPile);
+    }
+
+    private void OnClickDiscard()
+    {
+        var discard = battleManager.GetDiscardPile();
+        ShowCardListPopup("Discard Pile", discard);
     }
 }

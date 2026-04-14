@@ -597,6 +597,24 @@ public class BattleManager : MonoBehaviour
 
     #endregion
 
+    #region Getter
+    public IReadOnlyList<CardInstance> GetDrawPile()
+    {
+        return drawPile;
+    }
+
+    public IReadOnlyList<CardInstance> GetDiscardPile()
+    {
+        return discardPile;
+    }
+
+    public IReadOnlyList<CardInstance> GetCurrentDeck()
+    {
+        return deck;
+    }
+
+    #endregion
+
     #region UI
 
     public void RefreshUI()
