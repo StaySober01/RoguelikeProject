@@ -1,37 +1,99 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class DetailPopupUI : MonoBehaviour
 {
+    [Header("Root")]
     [SerializeField] private GameObject root;
+
+    [Header("Texts")]
     [SerializeField] private TextMeshProUGUI titleText;
-    [SerializeField] private TextMeshProUGUI contentText;
-    [SerializeField] private Button closeButton;
+    [SerializeField] private TextMeshProUGUI emptyText;
+
+    [Header("Card List")]
+    [SerializeField] private Transform contentRoot;
+    [SerializeField] private DetailPopupCardItemUI cardItemPrefab;
+
+    [Header("Tooltip")]
+    [SerializeField] private CardTooltipUI cardTooltipUI;
+
+    private readonly List<DetailPopupCardItemUI> spawnedItems = new();
 
     private void Awake()
     {
-        if (closeButton != null)
-            closeButton.onClick.AddListener(Hide);
-
         Hide();
     }
 
-    public void Show(string title, string content)
+    public void ShowCardList(string title, IReadOnlyList<CardInstance> cards)
     {
+        ClearItems();
+
         if (titleText != null)
             titleText.text = title;
 
-        if (contentText != null)
-            contentText.text = content;
+        bool isEmpty = cards == null || cards.Count == 0;
 
-        if (root != null)
-            root.SetActive(true);
+        if (emptyText != null)
+        {
+            emptyText.gameObject.SetActive(isEmpty);
+            if (isEmpty)
+                emptyText.text = "Empty";
+        }
+
+        if (!isEmpty)
+        {
+            foreach (var card in cards)
+            {
+                var item = Instantiate(cardItemPrefab, contentRoot);
+                item.Initialize(card, cardTooltipUI);
+                spawnedItems.Add(item);
+            }
+        }
+
+        root.SetActive(true);
+    }
+
+    public void ShowTextList(string title, string content)
+    {
+        ClearItems();
+
+        if (titleText != null)
+            titleText.text = title;
+
+        if (emptyText != null)
+        {
+            emptyText.gameObject.SetActive(true);
+            emptyText.text = content;
+        }
+
+        root.SetActive(true);
     }
 
     public void Hide()
     {
-        if (root != null)
-            root.SetActive(false);
+        ClearItems();
+
+        if (cardTooltipUI != null)
+            cardTooltipUI.Hide();
+
+        root.SetActive(false);
+    }
+
+    private void ClearItems()
+    {
+        foreach (var item in spawnedItems)
+        {
+            if (item != null)
+            {
+                item.Clear();
+                Destroy(item.gameObject);
+            }
+        }
+
+        spawnedItems.Clear();
+
+        if (emptyText != null)
+            emptyText.gameObject.SetActive(false);
     }
 }

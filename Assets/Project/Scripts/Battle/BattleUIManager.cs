@@ -364,43 +364,7 @@ public class BattleUIManager : MonoBehaviour
         if (detailPopupUI == null)
             return;
 
-        StringBuilder sb = new StringBuilder();
-
-        if (cards == null || cards.Count == 0)
-        {
-            sb.Append("Empty");
-        }
-        else
-        {
-            foreach (var card in cards)
-            {
-                sb.AppendLine($"- {card.CardName} ({card.Cost})");
-            }
-        }
-
-        detailPopupUI.Show(title, sb.ToString());
-    }
-
-    public void ShowRelicListPopup(string title, IReadOnlyList<RelicDataSO> relics)
-    {
-        if (detailPopupUI == null)
-            return;
-
-        StringBuilder sb = new StringBuilder();
-
-        if (relics == null || relics.Count == 0)
-        {
-            sb.Append("None");
-        }
-        else
-        {
-            foreach (var relic in relics)
-            {
-                sb.AppendLine($"- {relic.DisplayName}");
-            }
-        }
-
-        detailPopupUI.Show(title, sb.ToString());
+        detailPopupUI.ShowCardList(title, cards);
     }
 
     private void OnClickDeck()
