@@ -1899,8 +1899,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SampleUnit
   unitName: sukyeom
-  maxHp: 10
-  currentHp: 10
+  maxHp: 100
+  currentHp: 100
   attackPower: 0
   currentBlock: 0
   selectedStartPassive: 0
@@ -2335,13 +2335,13 @@ RectTransform:
   - {fileID: 1197757248}
   - {fileID: 1847690049}
   - {fileID: 1357073063}
-  m_Father: {fileID: 1963744858}
+  m_Father: {fileID: 430475663}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -300, y: 0}
+  m_AnchoredPosition: {x: -150.00003, y: -250}
   m_SizeDelta: {x: 300, y: 500}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 1, y: 0}
 --- !u!114 &374838582
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2393,10 +2393,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CardTooltipUI
   root: {fileID: 374838580}
+  tooltipRect: {fileID: 374838581}
+  canvas: {fileID: 430475662}
   nameText: {fileID: 1546343023}
   costText: {fileID: 1197757249}
   categoryText: {fileID: 1357073064}
   descriptionText: {fileID: 1847690050}
+  offset: {x: -16, y: 16}
 --- !u!1 &392357470
 GameObject:
   m_ObjectHideFlags: 0
@@ -2758,6 +2761,7 @@ RectTransform:
   - {fileID: 769514856}
   - {fileID: 752767813}
   - {fileID: 25819185}
+  - {fileID: 374838581}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -7431,7 +7435,6 @@ RectTransform:
   - {fileID: 1431770970}
   - {fileID: 331611651}
   - {fileID: 208358212}
-  - {fileID: 374838581}
   m_Father: {fileID: 430475663}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}

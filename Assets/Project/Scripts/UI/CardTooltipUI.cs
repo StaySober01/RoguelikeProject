@@ -1,17 +1,35 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CardTooltipUI : MonoBehaviour
 {
     [SerializeField] private GameObject root;
+    [SerializeField] private RectTransform tooltipRect;
+    [SerializeField] private Canvas canvas;
+
+    [Header("Texts")]
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI costText;
     [SerializeField] private TextMeshProUGUI categoryText;
     [SerializeField] private TextMeshProUGUI descriptionText;
 
+    [Header("Follow Mouse")]
+    [SerializeField] private Vector2 offset = new Vector2(-5f, 5f);
+
+    private bool isShowing = false;
+
     private void Awake()
     {
         Hide();
+    }
+
+    private void Update()
+    {
+        if (!isShowing)
+            return;
+
+        FollowMouse();
     }
 
     public void Show(CardInstance card)
@@ -19,16 +37,50 @@ public class CardTooltipUI : MonoBehaviour
         if (card == null)
             return;
 
-        root.SetActive(true);
+        if (nameText != null)
+            nameText.text = card.CardName;
 
-        nameText.text = card.CardName;
-        costText.text = $"({card.Cost})";
-        categoryText.text = card.Category.ToString();
-        descriptionText.text = card.Description;
+        if (costText != null)
+            costText.text = $"({card.Cost})";
+
+        if (categoryText != null)
+            categoryText.text = card.Category.ToString();
+
+        if (descriptionText != null)
+            descriptionText.text = card.Description;
+
+        if (root != null)
+            root.SetActive(true);
+
+        isShowing = true;
+        FollowMouse();
     }
 
     public void Hide()
     {
-        root.SetActive(false);
+        isShowing = false;
+
+        if (root != null)
+            root.SetActive(false);
+    }
+
+    private void FollowMouse()
+    {
+        if (tooltipRect == null || canvas == null)
+            return;
+
+        RectTransform canvasRect = canvas.transform as RectTransform;
+
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            canvasRect,
+            mousePos,
+            canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
+            out localPoint
+        );
+
+        tooltipRect.anchoredPosition = localPoint + offset;
     }
 }
