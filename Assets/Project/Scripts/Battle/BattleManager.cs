@@ -613,6 +613,11 @@ public class BattleManager : MonoBehaviour
         return deck;
     }
 
+    public IReadOnlyList<RelicDataSO> GetCurrentRelic()
+    {
+        return relicManager.activeRelics;
+    }
+
     #endregion
 
     #region UI

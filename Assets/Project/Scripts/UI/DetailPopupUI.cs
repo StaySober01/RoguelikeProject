@@ -11,14 +11,21 @@ public class DetailPopupUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private TextMeshProUGUI emptyText;
 
-    [Header("Card List")]
+    [Header("Shared Content")]
     [SerializeField] private Transform contentRoot;
+
+    [Header("Card List")]
     [SerializeField] private DetailPopupCardItemUI cardItemPrefab;
+
+    [Header("Relic List")]
+    [SerializeField] private DetailPopupRelicItemUI relicItemPrefab;
 
     [Header("Tooltip")]
     [SerializeField] private CardTooltipUI cardTooltipUI;
+    [SerializeField] private RelicTooltipUI relicTooltipUI;
 
-    private readonly List<DetailPopupCardItemUI> spawnedItems = new();
+    private readonly List<DetailPopupCardItemUI> spawnedCardItems = new();
+    private readonly List<DetailPopupRelicItemUI> spawnedRelicItems = new();
 
     private void Awake()
     {
@@ -47,7 +54,36 @@ public class DetailPopupUI : MonoBehaviour
             {
                 var item = Instantiate(cardItemPrefab, contentRoot);
                 item.Initialize(card, cardTooltipUI);
-                spawnedItems.Add(item);
+                spawnedCardItems.Add(item);
+            }
+        }
+
+        root.SetActive(true);
+    }
+
+    public void ShowRelicList(string title, IReadOnlyList<RelicDataSO> relics)
+    {
+        ClearItems();
+
+        if (titleText != null)
+            titleText.text = title;
+
+        bool isEmpty = relics == null || relics.Count == 0;
+
+        if (emptyText != null)
+        {
+            emptyText.gameObject.SetActive(isEmpty);
+            if (isEmpty)
+                emptyText.text = "Empty";
+        }
+
+        if (!isEmpty)
+        {
+            foreach (var relic in relics)
+            {
+                var item = Instantiate(relicItemPrefab, contentRoot);
+                item.Initialize(relic, relicTooltipUI);
+                spawnedRelicItems.Add(item);
             }
         }
 
@@ -77,12 +113,15 @@ public class DetailPopupUI : MonoBehaviour
         if (cardTooltipUI != null)
             cardTooltipUI.Hide();
 
+        if (relicTooltipUI != null)
+            relicTooltipUI.Hide();
+
         root.SetActive(false);
     }
 
     private void ClearItems()
     {
-        foreach (var item in spawnedItems)
+        foreach (var item in spawnedCardItems)
         {
             if (item != null)
             {
@@ -91,7 +130,18 @@ public class DetailPopupUI : MonoBehaviour
             }
         }
 
-        spawnedItems.Clear();
+        spawnedCardItems.Clear();
+
+        foreach (var item in spawnedRelicItems)
+        {
+            if (item != null)
+            {
+                item.Clear();
+                Destroy(item.gameObject);
+            }
+        }
+
+        spawnedRelicItems.Clear();
 
         if (emptyText != null)
             emptyText.gameObject.SetActive(false);

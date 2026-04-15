@@ -42,6 +42,7 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private Button deckButton;
     [SerializeField] private Button drawPileButton;
     [SerializeField] private Button discardButton;
+    [SerializeField] private Button relicButton;
 
     private BattleManager battleManager;
 
@@ -56,6 +57,9 @@ public class BattleUIManager : MonoBehaviour
 
         if (discardButton != null)
             discardButton.onClick.AddListener(OnClickDiscard);
+
+        if (relicButton != null)
+            relicButton.onClick.AddListener(OnClickRelic);
     }
 
     public void RefreshUI(
@@ -367,6 +371,14 @@ public class BattleUIManager : MonoBehaviour
         detailPopupUI.ShowCardList(title, cards);
     }
 
+    public void ShowRelicListPopup(string title, IReadOnlyList<RelicDataSO> relics)
+    {
+        if (detailPopupUI == null)
+            return;
+
+        detailPopupUI.ShowRelicList(title, relics);
+    }
+
     private void OnClickDeck()
     {
         var deck = battleManager.GetCurrentDeck();
@@ -383,5 +395,11 @@ public class BattleUIManager : MonoBehaviour
     {
         var discard = battleManager.GetDiscardPile();
         ShowCardListPopup("Discard Pile", discard);
+    }
+
+    private void OnClickRelic()
+    {
+        var relic = battleManager.GetCurrentRelic();
+        ShowRelicListPopup("Active Relics", relic);
     }
 }
