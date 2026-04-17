@@ -31,11 +31,17 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playerHpText;
     [SerializeField] private TextMeshProUGUI enemyHpText;
     [SerializeField] private TextMeshProUGUI energyText;
-    [SerializeField] private TextMeshProUGUI stateText;
     [SerializeField] private TextMeshProUGUI battleText;
 
     [Header("Battle Log UI")]
     [SerializeField] private BattleLogUI battleLogUI;
+
+    [Header("Status Effect UI")]
+    [SerializeField] private Transform playerStatusEffectRoot;
+    [SerializeField] private Transform enemyStatusEffectRoot;
+    [SerializeField] private StatusEffectIconUI statusEffectIconPrefab;
+    [SerializeField] private StatusEffectTooltipUI statusEffectTooltipUI;
+    [SerializeField] private List<StatusEffectDisplayEntry> statusEffectDisplayEntries = new();
 
     [Header("Detail Popup UI")]
     [SerializeField] private DetailPopupUI detailPopupUI;
@@ -45,6 +51,8 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private Button relicButton;
 
     private BattleManager battleManager;
+    private readonly List<StatusEffectIconUI> spawnedPlayerStatusEffectIcons = new();
+    private readonly List<StatusEffectIconUI> spawnedEnemyStatusEffectIcons = new();
 
     private void Start()
     {
@@ -78,6 +86,7 @@ public class BattleUIManager : MonoBehaviour
     {
         UpdateHandUI(hand, state, currentEnergy, onUseCard);
         SetEndTurnInteractable(state == BattleState.PlayerTurn);
+        UpdateStatusEffectUI(playerUnit, enemyUnit, statusEffectController);
         UpdateDebugUI(
             state,
             currentEnergy,
@@ -153,55 +162,43 @@ public class BattleUIManager : MonoBehaviour
         Unit enemyUnit,
         StatusEffectController statusEffectController)
     {
-        int playerPoison = 0;
-        int playerBurn = 0;
-        int playerVulnerable = 0;
-        int enemyPoison = 0;
-        int enemyBurn = 0;
-        int enemyVulnerable = 0;
-
-        if (statusEffectController != null && playerUnit != null && enemyUnit != null)
-        {
-            playerPoison = statusEffectController.GetStack(playerUnit, StatusEffectType.Poison);
-            playerBurn = statusEffectController.GetStack(playerUnit, StatusEffectType.Burn);
-            playerVulnerable = statusEffectController.GetStack(playerUnit, StatusEffectType.Vulnerable);
-            enemyPoison = statusEffectController.GetStack(enemyUnit, StatusEffectType.Poison);
-            enemyBurn = statusEffectController.GetStack(enemyUnit, StatusEffectType.Burn);
-            enemyVulnerable = statusEffectController.GetStack(enemyUnit, StatusEffectType.Vulnerable);
-        }
-
         if (playerHpText != null && playerUnit != null)
         {
             playerHpText.text =
                 $"Player HP: {playerUnit.currentHp}/{playerUnit.maxHp}  " +
-                $"Block: {playerUnit.currentBlock}  " +
-                $"Poison: {playerPoison}  " +
-                $"Burn: {playerBurn}  " +
-                $"Vulerable: {playerVulnerable}";
+                $"Block: {playerUnit.currentBlock}";
         }
 
         if (enemyHpText != null && enemyUnit != null)
         {
             enemyHpText.text =
                 $"Enemy HP: {enemyUnit.currentHp}/{enemyUnit.maxHp}  " +
-                $"Block: {enemyUnit.currentBlock}  " +
-                $"Poison: {enemyPoison}  " +
-                $"Burn: {enemyBurn}  " +
-                $"Vulerable: {enemyVulnerable}";
+                $"Block: {enemyUnit.currentBlock}";
         }
 
         if (energyText != null)
             energyText.text = $"Energy: {currentEnergy}/{maxEnergy}";
 
-        if (stateText != null)
-        {
-            stateText.text =
-                $"State: {state}\n" +
-                $"Draw: {drawPileCount}  Hand: {handCount}  Discard: {discardPileCount}";
-        }
-
         if (battleText != null)
             battleText.text = $"Battle {battleWinCount + 1}";
+    }
+
+    public void UpdateStatusEffectUI(
+        Unit playerUnit,
+        Unit enemyUnit,
+        StatusEffectController statusEffectController)
+    {
+        UpdateUnitStatusEffectIcons(
+            playerStatusEffectRoot,
+            spawnedPlayerStatusEffectIcons,
+            playerUnit,
+            statusEffectController);
+
+        UpdateUnitStatusEffectIcons(
+            enemyStatusEffectRoot,
+            spawnedEnemyStatusEffectIcons,
+            enemyUnit,
+            statusEffectController);
     }
 
     public void ShowCardRewardUI(
@@ -401,5 +398,72 @@ public class BattleUIManager : MonoBehaviour
     {
         var relic = battleManager.GetCurrentRelic();
         ShowRelicListPopup("Active Relics", relic);
+    }
+
+    private void UpdateUnitStatusEffectIcons(
+        Transform root,
+        List<StatusEffectIconUI> spawnedIcons,
+        Unit unit,
+        StatusEffectController statusEffectController)
+    {
+        ClearStatusEffectIcons(spawnedIcons);
+
+        if (root == null || statusEffectIconPrefab == null || unit == null || statusEffectController == null)
+            return;
+
+        foreach (StatusEffectType statusEffectType in GetDisplayStatusEffectTypes())
+        {
+            int stack = statusEffectController.GetStack(unit, statusEffectType);
+            if (stack <= 0)
+                continue;
+
+            StatusEffectDisplayEntry displayEntry = GetStatusEffectDisplayEntry(statusEffectType);
+            if (displayEntry == null)
+                continue;
+
+            StatusEffectIconUI iconUI = Instantiate(statusEffectIconPrefab, root);
+            iconUI.Initialize(
+                displayEntry.iconSprite,
+                stack,
+                displayEntry.displayName,
+                displayEntry.description,
+                statusEffectTooltipUI);
+            spawnedIcons.Add(iconUI);
+        }
+    }
+
+    private void ClearStatusEffectIcons(List<StatusEffectIconUI> spawnedIcons)
+    {
+        for (int i = 0; i < spawnedIcons.Count; i++)
+        {
+            if (spawnedIcons[i] == null)
+                continue;
+
+            spawnedIcons[i].Clear();
+            Destroy(spawnedIcons[i].gameObject);
+        }
+
+        spawnedIcons.Clear();
+    }
+
+    private IEnumerable<StatusEffectType> GetDisplayStatusEffectTypes()
+    {
+        yield return StatusEffectType.Poison;
+        yield return StatusEffectType.Burn;
+        yield return StatusEffectType.Vulnerable;
+    }
+
+    private StatusEffectDisplayEntry GetStatusEffectDisplayEntry(StatusEffectType type)
+    {
+        for (int i = 0; i < statusEffectDisplayEntries.Count; i++)
+        {
+            if (statusEffectDisplayEntries[i] == null)
+                continue;
+
+            if (statusEffectDisplayEntries[i].type == type)
+                return statusEffectDisplayEntries[i];
+        }
+
+        return null;
     }
 }
