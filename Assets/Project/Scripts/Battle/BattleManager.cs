@@ -205,6 +205,7 @@ public class BattleManager : MonoBehaviour
         AddBattleLog("Turn End");
 
         TriggerTurnEndRelics();
+        statusEffectController.ProcessTurnEnd(playerUnit);
 
         if (CheckBattleEnd())
             return;
@@ -315,7 +316,7 @@ public class BattleManager : MonoBehaviour
 
             case EnemyActionType.Attack:
                 Debug.Log($"[Battle] {enemyUnit.unitName} attacks {playerUnit.unitName} for {action.value}");
-                playerUnit.TakeDamage(action.value);
+                DealDamage(enemyUnit, playerUnit, action.value);
                 break;
 
             case EnemyActionType.GainBlock:
