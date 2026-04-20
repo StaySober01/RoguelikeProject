@@ -50,6 +50,10 @@ public class BattleUIManager : MonoBehaviour
     [SerializeField] private Button discardButton;
     [SerializeField] private Button relicButton;
 
+    [Header("Enemy Intent UI")]
+    [SerializeField] private EnemyIntentUI enemyIntentUI;
+    [SerializeField] private Sprite attackIcon;
+
     private BattleManager battleManager;
     private readonly List<StatusEffectIconUI> spawnedPlayerStatusEffectIcons = new();
     private readonly List<StatusEffectIconUI> spawnedEnemyStatusEffectIcons = new();
@@ -465,5 +469,13 @@ public class BattleUIManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    public void UpdateEnemyIntent(int damage)
+    {
+        if (enemyIntentUI == null)
+            return;
+
+        enemyIntentUI.SetIntent(attackIcon, damage);
     }
 }

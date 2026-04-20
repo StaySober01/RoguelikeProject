@@ -179,6 +179,7 @@ public class BattleManager : MonoBehaviour
         DrawCards(drawCountPerTurn);
 
         Debug.Log($"[Battle] Player turn start - Energy: {currentEnergy}/{maxEnergy}");
+        battleUIManager.UpdateEnemyIntent(enemyUnit.attackPower);
         RefreshUI();
 
         isFirstPlayerTurnOfBattle = false;
