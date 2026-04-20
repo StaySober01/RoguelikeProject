@@ -40,7 +40,7 @@ public class RelicTooltipUI : MonoBehaviour
             nameText.text = relic.DisplayName;
 
         if (descriptionText != null)
-            descriptionText.text = BuildDescription(relic);
+            descriptionText.text = relic.relicDescription;
 
         if (root != null)
             root.SetActive(true);
@@ -75,27 +75,5 @@ public class RelicTooltipUI : MonoBehaviour
         );
 
         tooltipRect.anchoredPosition = localPoint + offset;
-    }
-
-    private string BuildDescription(RelicDataSO relic)
-    {
-        if (relic == null || relic.effectDataList == null || relic.effectDataList.Count == 0)
-            return string.Empty;
-
-        StringBuilder builder = new StringBuilder();
-
-        for (int i = 0; i < relic.effectDataList.Count; i++)
-        {
-            RelicEffectDataSO effectData = relic.effectDataList[i];
-            if (effectData == null)
-                continue;
-
-            if (builder.Length > 0)
-                builder.AppendLine();
-
-            builder.Append(effectData.name);
-        }
-
-        return builder.ToString();
     }
 }

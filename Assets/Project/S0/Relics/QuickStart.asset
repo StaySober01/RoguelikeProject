@@ -14,5 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RelicDataSO
   relicType: 5
   relicName: Quick Start
+  relicDescription: Gain 1 additional Energy at the start of the first turn of each
+    battle.
   effectDataList:
   - {fileID: 11400000, guid: a71f8a061b2abba40a0ca8dda477ecf9, type: 2}

@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RelicDataSO
   relicType: 4
   relicName: Opening Salvo
+  relicDescription: Deal 3 damage to the enemy at the start of each turn.
   effectDataList:
   - {fileID: 11400000, guid: 695d3425855da904daf413370b49f9bd, type: 2}

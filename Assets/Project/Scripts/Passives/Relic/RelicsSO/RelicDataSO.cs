@@ -6,6 +6,7 @@ public class RelicDataSO : ScriptableObject
 {
     public RelicType relicType;
     public string relicName;
+    public string relicDescription;
     public List<RelicEffectDataSO> effectDataList = new();
 
     public string DisplayName

@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RelicDataSO
   relicType: 3
   relicName: Pressure Point
+  relicDescription: Gain 1 Energy once per turn when attacking a Vulnerable enemy.
   effectDataList:
   - {fileID: 11400000, guid: 247e1b9f525ba804f9c36f3ed9a7c404, type: 2}

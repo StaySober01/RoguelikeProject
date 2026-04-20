@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RelicDataSO
   relicType: 0
   relicName: Venom Sac
+  relicDescription: Apply +1 additional Poison whenever Poison is applied.
   effectDataList:
   - {fileID: 11400000, guid: a70f39c4629b3cb4fbe6ae8bb0066be8, type: 2}

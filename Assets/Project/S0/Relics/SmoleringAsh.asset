@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RelicDataSO
   relicType: 1
   relicName: Smoldering Ash
+  relicDescription: Draw 1 card when a Burn explosion triggers.
   effectDataList:
   - {fileID: 11400000, guid: 53415e4369c46da45bbdbb6fb0ece10a, type: 2}

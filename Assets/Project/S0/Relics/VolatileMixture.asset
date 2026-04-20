@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RelicDataSO
   relicType: 2
   relicName: Volatile Mixture
+  relicDescription: Deal +2 damage to enemies afflicted with both Poison and Burn.
   effectDataList:
   - {fileID: 11400000, guid: ea2d17da247397c41b098e1e46e15616, type: 2}
