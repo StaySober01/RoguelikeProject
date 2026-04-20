@@ -16,7 +16,7 @@ public class BattleManager : MonoBehaviour
 
     [Header("Units")]
     public Unit playerUnit;
-    public Unit enemyUnit;
+    public EnemyUnit enemyUnit;
 
     [Header("Turn / Energy")]
     public int maxEnergy = 3;
@@ -179,7 +179,7 @@ public class BattleManager : MonoBehaviour
         DrawCards(drawCountPerTurn);
 
         Debug.Log($"[Battle] Player turn start - Energy: {currentEnergy}/{maxEnergy}");
-        battleUIManager.UpdateEnemyIntent(enemyUnit.attackPower);
+        battleUIManager.UpdateEnemyIntent(enemyUnit.GetCurrentAction());
         RefreshUI();
 
         isFirstPlayerTurnOfBattle = false;
@@ -279,8 +279,8 @@ public class BattleManager : MonoBehaviour
 
         yield return new WaitForSeconds(enemyAttackDelay);
 
-        Debug.Log($"[Battle] {enemyUnit.unitName} attacks {playerUnit.unitName}");
-        playerUnit.TakeDamage(enemyUnit.attackPower);
+        ExecuteEnemyAction(enemyUnit.GetCurrentAction());
+        enemyUnit.AdvancePattern();
         RefreshUI();
 
         if (CheckBattleEnd())
@@ -298,6 +298,31 @@ public class BattleManager : MonoBehaviour
 
         Debug.Log("[Battle] Enemy turn end");
         StartPlayerTurn();
+    }
+
+    private void ExecuteEnemyAction(EnemyActionData action)
+    {
+        if (action == null)
+            return;
+
+        switch (action.actionType)
+        {
+            case EnemyActionType.ApplyVulnerable:
+                Debug.Log($"[Battle] {enemyUnit.unitName} applies {action.value} Vulnerable to {playerUnit.unitName}");
+                playerUnit.statusData.AddStack(StatusEffectType.Vulnerable, action.value);
+                AddBattleLog($"Player gains {action.value} Vulnerable");
+                break;
+
+            case EnemyActionType.Attack:
+                Debug.Log($"[Battle] {enemyUnit.unitName} attacks {playerUnit.unitName} for {action.value}");
+                playerUnit.TakeDamage(action.value);
+                break;
+
+            case EnemyActionType.GainBlock:
+                Debug.Log($"[Battle] {enemyUnit.unitName} gains {action.value} Block");
+                enemyUnit.AddBlock(action.value);
+                break;
+        }
     }
 
     #endregion

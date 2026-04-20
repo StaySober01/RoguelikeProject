@@ -2123,16 +2123,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 332133011}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: afb88eb6128967748b3cfe6331386cfd, type: 3}
+  m_Script: {fileID: 11500000, guid: 3e326345bc1e47840bbb72824b2d5482, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SampleUnit
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyUnit
   unitName: sukyeom
   maxHp: 10
   currentHp: 10
-  attackPower: 0
+  attackPower: 5
   currentBlock: 0
   selectedStartPassive: 0
   activeRelics: 
+  actionPattern: []
 --- !u!1 &352981199
 GameObject:
   m_ObjectHideFlags: 0
@@ -5160,7 +5161,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyIntentUI
   icon: {fileID: 456423988}
-  damageText: {fileID: 543237198}
+  amountText: {fileID: 543237198}
+  attackIcon: {fileID: 21300000, guid: ca7a40b900026a149bbfea6fcf993bdb, type: 3}
+  blockIcon: {fileID: 21300000, guid: c68dd8803b5d6de4e8bcae76cfd62bd6, type: 3}
+  statusIcon: {fileID: 5169984005172249002, guid: 574778f7440dd80449a88a05ecbe8595, type: 3}
 --- !u!1 &924960895
 GameObject:
   m_ObjectHideFlags: 0
@@ -7867,7 +7871,6 @@ MonoBehaviour:
   discardButton: {fileID: 25819186}
   relicButton: {fileID: 854713629}
   enemyIntentUI: {fileID: 917270410}
-  attackIcon: {fileID: 21300000, guid: ca7a40b900026a149bbfea6fcf993bdb, type: 3}
 --- !u!1 &1662884842
 GameObject:
   m_ObjectHideFlags: 0

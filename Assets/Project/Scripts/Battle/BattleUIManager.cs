@@ -52,7 +52,6 @@ public class BattleUIManager : MonoBehaviour
 
     [Header("Enemy Intent UI")]
     [SerializeField] private EnemyIntentUI enemyIntentUI;
-    [SerializeField] private Sprite attackIcon;
 
     private BattleManager battleManager;
     private readonly List<StatusEffectIconUI> spawnedPlayerStatusEffectIcons = new();
@@ -84,7 +83,7 @@ public class BattleUIManager : MonoBehaviour
         int discardPileCount,
         int battleWinCount,
         Unit playerUnit,
-        Unit enemyUnit,
+        EnemyUnit enemyUnit,
         StatusEffectController statusEffectController,
         Action<CardInstance> onUseCard)
     {
@@ -163,7 +162,7 @@ public class BattleUIManager : MonoBehaviour
         int discardPileCount,
         int battleWinCount,
         Unit playerUnit,
-        Unit enemyUnit,
+        EnemyUnit enemyUnit,
         StatusEffectController statusEffectController)
     {
         if (playerHpText != null && playerUnit != null)
@@ -189,7 +188,7 @@ public class BattleUIManager : MonoBehaviour
 
     public void UpdateStatusEffectUI(
         Unit playerUnit,
-        Unit enemyUnit,
+        EnemyUnit enemyUnit,
         StatusEffectController statusEffectController)
     {
         UpdateUnitStatusEffectIcons(
@@ -471,11 +470,11 @@ public class BattleUIManager : MonoBehaviour
         return null;
     }
 
-    public void UpdateEnemyIntent(int damage)
+    public void UpdateEnemyIntent(EnemyActionData action)
     {
         if (enemyIntentUI == null)
             return;
 
-        enemyIntentUI.SetIntent(attackIcon, damage);
+        enemyIntentUI.SetIntent(action.actionType, action.value);
     }
 }

@@ -5,16 +5,29 @@ using UnityEngine.UI;
 public class EnemyIntentUI : MonoBehaviour
 {
     [SerializeField] private Image icon;
-    [SerializeField] private TextMeshProUGUI damageText;
+    [SerializeField] private TextMeshProUGUI amountText;
+    [SerializeField] private Sprite attackIcon;
+    [SerializeField] private Sprite blockIcon;
+    [SerializeField] private Sprite statusIcon;
 
-    public void SetIntent(Sprite attackIcon, int damage)
+    public void SetIntent(EnemyActionType type, int amount)
     {
-        if (icon != null)
-            icon.sprite = attackIcon;
+        switch (type)
+        {
+            case EnemyActionType.Attack:
+                icon.sprite = attackIcon;
+                break;
 
-        if (damageText != null)
-            damageText.text = damage.ToString();
+            case EnemyActionType.GainBlock:
+                icon.sprite = blockIcon;
+                break;
 
+            case EnemyActionType.ApplyVulnerable:
+                icon.sprite = statusIcon;
+                break;
+        }
+
+        amountText.text = amount.ToString();
         gameObject.SetActive(true);
     }
 
