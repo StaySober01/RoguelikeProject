@@ -51,12 +51,13 @@ public class BattleManager : MonoBehaviour
 
     private CardEffectResolver cardEffectResolver = new();
     private int battleWinCount = 0;
-    private RewardType currentRewardType;
     private bool isFirstPlayerTurnOfBattle = true;
     private bool gainedEnergyFromPressurePointThisTurn = false;
+    private bool isRunBattle = false;
 
     [SerializeField] private CardDatabaseSO cardDatabase;
     [SerializeField] private RelicDatabaseSO relicDatabase;
+    [SerializeField] private EncounterDatabaseSO encounterDatabase;
 
     #endregion
 
@@ -79,11 +80,114 @@ public class BattleManager : MonoBehaviour
     private void Start()
     {
         EnsureBattleUIManager();
+
+        InitializeFromRunIfAvailable();
+        ApplyEncounterFromRunIfAvailable();
         relicManager.Initialize(this, statusEffectController);
+
         baseEnemyHp = enemyUnit.maxHp;
         baseEnemyAttack = enemyUnit.attackPower;
-        InitializePermanentDeck();
-        ShowStartPassiveSelection();
+
+        if (!isRunBattle)
+        {
+            InitializePermanentDeck();
+            ShowStartPassiveSelection();
+            return;
+        }
+
+        if (RunManager.Instance.CurrentRun.hasSelectedStartPassive)
+        {
+            playerUnit.selectedStartPassive = RunManager.Instance.CurrentRun.selectedStartPassive;
+            StartBattle();
+        }
+        else
+        {
+            ShowStartPassiveSelection();
+        }
+    }
+
+    #endregion
+
+    #region Run Integration
+
+    private void InitializeFromRunIfAvailable()
+    {
+        if (RunManager.Instance == null)
+            return;
+
+        RunManager.Instance.EnsureRunStarted(playerUnit, cardDatabase);
+
+        if (!RunManager.Instance.CurrentRun.isRunActive)
+            return;
+
+        isRunBattle = true;
+        RunState run = RunManager.Instance.CurrentRun;
+
+        if (playerUnit != null)
+        {
+            playerUnit.maxHp = run.maxHp;
+            playerUnit.currentHp = Mathf.Clamp(run.currentHp, 0, run.maxHp);
+            playerUnit.selectedStartPassive = run.selectedStartPassive;
+            playerUnit.currentBlock = 0;
+            playerUnit.ClearStatusData();
+        }
+
+        deck = run.deck != null && run.deck.Count > 0
+            ? new List<CardInstance>(run.deck)
+            : cardDatabase.CreateStarterDeck();
+
+        if (relicManager != null)
+        {
+            relicManager.activeRelics = run.relics != null
+                ? new List<RelicDataSO>(run.relics)
+                : new List<RelicDataSO>();
+        }
+    }
+
+    private void ApplyEncounterFromRunIfAvailable()
+    {
+        if (!isRunBattle || encounterDatabase == null || RunManager.Instance == null)
+            return;
+
+        EncounterDataSO encounter = encounterDatabase.GetEncounter(RunManager.Instance.CurrentRun.currentEncounterId);
+        if (encounter == null)
+            return;
+
+        if (encounter.enemyPrefab != null)
+        {
+            Transform enemyParent = enemyUnit != null ? enemyUnit.transform.parent : null;
+            Vector3 enemyPosition = enemyUnit != null ? enemyUnit.transform.position : Vector3.zero;
+            Quaternion enemyRotation = enemyUnit != null ? enemyUnit.transform.rotation : Quaternion.identity;
+
+            if (enemyUnit != null)
+                Destroy(enemyUnit.gameObject);
+
+            enemyUnit = Instantiate(encounter.enemyPrefab, enemyPosition, enemyRotation, enemyParent);
+        }
+
+        if (enemyUnit == null)
+            return;
+
+        enemyUnit.maxHp += encounter.hpBonus;
+        enemyUnit.currentHp = enemyUnit.maxHp;
+        enemyUnit.attackPower += encounter.attackBonus;
+    }
+
+    private void SaveBattleProgressToRun()
+    {
+        if (!isRunBattle || RunManager.Instance == null)
+            return;
+
+        RunManager.Instance.SaveBattleProgress(playerUnit, deck, relicManager != null ? relicManager.activeRelics : null);
+    }
+
+    private void CompleteRunBattle(bool victory)
+    {
+        if (!isRunBattle || RunManager.Instance == null)
+            return;
+
+        SaveBattleProgressToRun();
+        RunManager.Instance.CompleteBattle(victory, playerUnit != null ? playerUnit.currentHp : 0);
     }
 
     #endregion
@@ -106,6 +210,8 @@ public class BattleManager : MonoBehaviour
         playerUnit.selectedStartPassive = passive;
         Debug.Log($"[Battle] Start passive selected: {passive}");
         AddStartPassiveCard(passive);
+
+        SaveBattleProgressToRun();
 
         battleUIManager?.HideStartPassiveSelection();
 
@@ -222,6 +328,14 @@ public class BattleManager : MonoBehaviour
             battleWinCount++;
             Debug.Log("[Battle] Victory");
             AddBattleLog("Victory");
+
+            if (isRunBattle)
+            {
+                RefreshUI();
+                CompleteRunBattle(true);
+                return true;
+            }
+
             ShowBattleReward();
             RefreshUI();
             return true;
@@ -233,6 +347,7 @@ public class BattleManager : MonoBehaviour
             Debug.Log("[Battle] Defeat");
             AddBattleLog("Defeat");
             RefreshUI();
+            CompleteRunBattle(false);
             return true;
         }
 
@@ -395,13 +510,11 @@ public class BattleManager : MonoBehaviour
     {
         if (ShouldShowRelicReward())
         {
-            currentRewardType = RewardType.Relic;
             GenerateRelicRewards();
             ShowRelicRewardUI();
         }
         else
         {
-            currentRewardType = RewardType.Card;
             GenerateCardRewards();
             ShowCardRewardUI();
         }
@@ -417,6 +530,12 @@ public class BattleManager : MonoBehaviour
 
     private void StartNextBattle()
     {
+        if (isRunBattle)
+        {
+            CompleteRunBattle(true);
+            return;
+        }
+
         ResetUnitsForNextBattle();
         StartBattle();
     }

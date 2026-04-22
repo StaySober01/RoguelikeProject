@@ -1,0 +1,44 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c34a1be6cad2fa46a0d32ed550d8dbd, type: 3}
+  m_Name: MapData
+  m_EditorClassIdentifier: Assembly-CSharp::MapDataSO
+  nodes:
+  - nodeId: node_1
+    nodeType: 1
+    uiPosition: {x: -400, y: 0}
+    encounterId: basic_1
+    connectedNodeIds:
+    - node_2
+  - nodeId: node_2
+    nodeType: 1
+    uiPosition: {x: -200, y: 0}
+    encounterId: basic_2
+    connectedNodeIds:
+    - node_3
+  - nodeId: node_3
+    nodeType: 1
+    uiPosition: {x: 0, y: 0}
+    encounterId: basic_3
+    connectedNodeIds:
+    - node_4
+  - nodeId: node_4
+    nodeType: 1
+    uiPosition: {x: 200, y: 0}
+    encounterId: basic_4
+    connectedNodeIds:
+    - node_5
+  - nodeId: node_5
+    nodeType: 1
+    uiPosition: {x: 400, y: 0}
+    encounterId: basic_5
+    connectedNodeIds: []
